@@ -1,4 +1,4 @@
-package com.hdfs.nodes;
+package com.dfs.nodes;
 
 public class SecondaryNameNode {
 

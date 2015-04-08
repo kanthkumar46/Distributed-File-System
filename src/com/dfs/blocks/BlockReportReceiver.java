@@ -1,4 +1,4 @@
-package com.hdfs.blocks;
+package com.dfs.blocks;
 
 public class BlockReportReceiver {
 

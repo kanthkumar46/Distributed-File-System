@@ -1,4 +1,4 @@
-package com.hdfs.failure;
+package com.dfs.failure;
 
 public class HeartBeatReceiver {
 
