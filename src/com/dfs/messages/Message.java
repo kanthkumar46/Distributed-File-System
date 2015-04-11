@@ -34,6 +34,7 @@ public class Message {
 		this.ipAddress = ipAddress;
 		this.portNum = portNum;
 		this.fileName = fileName;
+		this.replication = replication;
 	}
 
 	public int getReplication() {

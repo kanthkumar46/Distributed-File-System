@@ -63,13 +63,16 @@ class NameNodeClientReply implements Runnable {
 
 public class NameNode {
 
+	
 	private static List<String> nodeList;
 	private static final String SLAVES_PATH = "slaves";
 	private static final int defaultReplication = 3;
-
+	
 	public List<String> getNodeList(int num){
 		return null;
 	}
+	
+	
 	public NameNode() throws IOException {
 
 		// Read Data node list from slaves
