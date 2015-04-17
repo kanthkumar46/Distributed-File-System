@@ -14,7 +14,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.messages.Message;
+import com.dfs.messages.NameNodeReplyMessage;
 
+
+/***
+ * To handle client requests. Server Socket running at port num 5285
+ * Receives requests such as list, mkdir, put, get
+ * @author ssuman
+ *
+ */
 class NameNodeClientRequest implements Runnable {
 
 	private final int PORT_NUM = 5285;
@@ -45,6 +53,7 @@ class NameNodeHandler implements Runnable {
 
 	private Message message;
 	
+	
 	public NameNodeHandler(Message message){
 		this.message = message;
 	}
@@ -52,29 +61,53 @@ class NameNodeHandler implements Runnable {
 	@Override
 	public void run() {
 		
+		decider();
+	}
+
+	/***
+	 * Decides the type of request. 
+	 */
+	private void decider() {
 		
-	}
-	
-}
-
-class NameNodeClientReply implements Runnable {
-
-	private Message message;
-	public NameNodeClientReply(Message message){
-		this.message = message;
-	}
-	
-	@Override
-	public void run() {
-		try {
-			Socket socket = new Socket(message.getIpAddress(),message.getPortNum());
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-			//oos.writeObject(obj);
-		} catch (IOException e) {
-			
+		if(message.getRequestType().equals(RequestType.MKDIR)){
+			mkdir();
+		}
+		else if(message.getRequestType().equals(RequestType.LIST)){
+			list();
 		}
 		
 	}
+
+	private void list() {
+		List<String> fileList = NameNode.tree.listFiles(message.getSourcePath());
+		
+	}
+
+	/**
+	 * Handling mkdir requests sent by client
+	 */
+	private void mkdir() {
+		boolean out =NameNode.tree.addNode(message.getSourcePath(), 0, FileType.DIR);
+		sendReply(new NameNodeReplyMessage(null,null,out==true?0:-1,RequestType.MKDIR));
+	}
+	
+	/***
+	 * Send reply to client through sockets. NameNodeReplyMessage object is sent.
+	 * @param obj
+	 */
+	private void sendReply(Object obj){
+		try {
+			Socket socket = new Socket(message.getIpAddress(),message.getPortNum());
+			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+			oos.writeObject(obj);
+			oos.close();
+			socket.close();
+		} catch (IOException e) {	
+			e.printStackTrace();
+		}
+		
+	}
+	
 }
 
 public class NameNode {
@@ -83,17 +116,19 @@ public class NameNode {
 	private static List<String> nodeList;
 	private static final String SLAVES_PATH = "slaves";
 	private static final int defaultReplication = 3;
-	
+	private static final String RACK_AWARNSS_PATH="rack_awareness.data";
+	protected static NameSpaceTree tree ;
 	public List<String> getNodeList(int num){
 		return null;
 	}
 	
 	
 	public NameNode() throws IOException {
-
+		tree = new NameSpaceTree();
 		// Read Data node list from slaves file
 		nodeList = new ArrayList<>();
 		File file = new File(SLAVES_PATH);
+		
 		BufferedReader stream = new BufferedReader(new FileReader(file));
 		String node = null;
 		while ((node = stream.readLine()) != null)
