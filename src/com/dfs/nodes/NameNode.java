@@ -28,7 +28,7 @@ class NameNodeClientRequest implements Runnable {
 					socket.getInputStream());
 			Message message = (Message) stream.readObject();
 			ExecutorService service = Executors.newFixedThreadPool(5);
-			service.execute(new NameNodeClientReply(message));
+			service.execute(new NameNodeHandler(message));
 			
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -39,6 +39,22 @@ class NameNodeClientRequest implements Runnable {
 
 	}
 
+}
+
+class NameNodeHandler implements Runnable {
+
+	private Message message;
+	
+	public NameNodeHandler(Message message){
+		this.message = message;
+	}
+	
+	@Override
+	public void run() {
+		
+		
+	}
+	
 }
 
 class NameNodeClientReply implements Runnable {
@@ -75,7 +91,7 @@ public class NameNode {
 	
 	public NameNode() throws IOException {
 
-		// Read Data node list from slaves
+		// Read Data node list from slaves file
 		nodeList = new ArrayList<>();
 		File file = new File(SLAVES_PATH);
 		BufferedReader stream = new BufferedReader(new FileReader(file));

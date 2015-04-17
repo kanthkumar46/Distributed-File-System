@@ -11,7 +11,7 @@ import java.util.List;
 public class NameNodeReplyMessage {
 	private List<String> dataNodes;
 	private String blockId;
-	
+	private int errorCode;
 	
 	public NameNodeReplyMessage(){
 		

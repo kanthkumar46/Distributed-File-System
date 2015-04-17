@@ -8,11 +8,22 @@ public class NamespaceTreeNode {
 	private String info;
 	private List<NamespaceTreeNode> children;
 	private FileType fileType;
+	private FileInfo fileInfo;
 	
-	public NamespaceTreeNode(FileType type){
-		 children = new ArrayList<>();
-		 info=null;
-		 this.setFileType(type);
+	public NamespaceTreeNode(FileType type, String info){
+		if(type==FileType.DIR){
+			this.children = new ArrayList<>();
+			this.info=info;
+			this.setFileType(type);
+			this.setFileInfo(null);
+		}
+		else{
+			this.children = null;
+			this.info=info;
+			this.setFileType(type);
+			this.setFileInfo(new FileInfo());
+		}
+		
 	}
 
 
@@ -43,6 +54,22 @@ public class NamespaceTreeNode {
 
 	public void setFileType(FileType fileType) {
 		this.fileType = fileType;
+	}
+
+
+	/**
+	 * @return the fileInfo
+	 */
+	public FileInfo getFileInfo() {
+		return fileInfo;
+	}
+
+
+	/**
+	 * @param fileInfo the fileInfo to set
+	 */
+	public void setFileInfo(FileInfo fileInfo) {
+		this.fileInfo = fileInfo;
 	}
 	
 	
