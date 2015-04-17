@@ -1,9 +1,12 @@
 package com.dfs.messages;
 
+import java.io.Serializable;
+
 import com.dfs.nodes.RequestType;
 
-public class Message {
+public class Message implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
 	private String ipAddress;
 	private int portNum;
 	private String sourcePath;
