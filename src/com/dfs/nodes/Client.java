@@ -194,7 +194,7 @@ class DFSCommand{
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			Message makeDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
-					dir_path,null,-1,RequestType.MKDIR);
+					dir_path,RequestType.MKDIR);
 			stream.writeObject(makeDirectoryRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -203,13 +203,13 @@ class DFSCommand{
 		return 0;
 	}
 	
-	public static int ls(String dir){
+	public static int ls(String dir_path){
 		Connector connector = new Connector();
 		Socket socket= connector.connectToNameNode();
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			Message listDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
-					dir,null,-1,RequestType.LIST);
+					dir_path,RequestType.LIST);
 			stream.writeObject(listDirectoryRequest);
 		} catch (IOException e) {
 			e.printStackTrace();

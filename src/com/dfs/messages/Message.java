@@ -11,6 +11,7 @@ public class Message implements Serializable{
 	private int portNum;
 	private String sourcePath;
 	private String destinationPath;
+	private String directoryPath;
 	private RequestType requestType;
 	private int replication;
 	
@@ -40,6 +41,13 @@ public class Message implements Serializable{
 		this.setRequestType(type);
 	}
 
+	public Message(String ipAddress, int portNum, String directoryPath, RequestType type){
+		this.ipAddress = ipAddress;
+		this.portNum = portNum;
+		this.setDirectoryPath(directoryPath);
+		this.setRequestType(type);
+	}
+	
 	public int getReplication() {
 		return replication;
 	}
@@ -74,4 +82,13 @@ public class Message implements Serializable{
 	public void setRequestType(RequestType requestType) {
 		this.requestType = requestType;
 	}
+
+	public String getDirectoryPath() {
+		return directoryPath;
+	}
+
+	public void setDirectoryPath(String directoryPath) {
+		this.directoryPath = directoryPath;
+	}
+
 }
