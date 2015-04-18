@@ -12,19 +12,33 @@ import com.dfs.nodes.RequestType;
  */
 
 public class NameNodeReplyMessage implements Serializable{
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
-	private List<String> dataNodes;
-	private String blockId;
+		
 	private int errorCode;
 	private RequestType type;
 	
-	public NameNodeReplyMessage(List<String> dataNodes, String blkID,int errorCode,RequestType type){
-		this.dataNodes = dataNodes;
-		this.blockId = blkID;
+	public NameNodeReplyMessage(int errorCode, RequestType type){
+		this.setErrorCode(errorCode);
+		this.setType(type);
+	}
+
+	public int getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
+	}
+
+	public RequestType getType() {
+		return type;
+	}
+
+	public void setType(RequestType type) {
 		this.type = type;
 	}
 }
+
+
+

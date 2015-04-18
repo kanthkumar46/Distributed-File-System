@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
+import com.dfs.messages.MkdirNameNodeReplyMessage;
 import com.dfs.messages.NameNodeReplyMessage;
 
 
@@ -80,7 +82,7 @@ class NameNodeHandler implements Runnable {
 
 	private void list() {
 		List<String> fileList = NameNode.tree.listFiles(message.getSourcePath());
-		
+		sendReply(new ListNameNodeReplyMessage(fileList));
 	}
 
 	/**
@@ -88,14 +90,14 @@ class NameNodeHandler implements Runnable {
 	 */
 	private void mkdir() {
 		boolean out =NameNode.tree.addNode(message.getSourcePath(), 0, FileType.DIR);
-		sendReply(new NameNodeReplyMessage(null,null,out==true?0:-1,RequestType.MKDIR));
+		sendReply(new MkdirNameNodeReplyMessage());
 	}
 	
 	/***
 	 * Send reply to client through sockets. NameNodeReplyMessage object is sent.
 	 * @param obj
 	 */
-	private void sendReply(Object obj){
+	private void sendReply(NameNodeReplyMessage obj){
 		try {
 			Socket socket = new Socket(message.getIpAddress(),message.getPortNum());
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -118,6 +120,7 @@ public class NameNode {
 	private static final int defaultReplication = 3;
 	private static final String RACK_AWARNSS_PATH="rack_awareness.data";
 	protected static NameSpaceTree tree ;
+	
 	public List<String> getNodeList(int num){
 		return null;
 	}
