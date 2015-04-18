@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
@@ -17,6 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.messages.Message;
+import com.dfs.messages.MkdirNameNodeReplyMessage;
+import com.dfs.messages.NameNodeReplyMessage;
 
 public class Client {
 	private static final String MASTER_PATH = "master";
@@ -159,7 +162,12 @@ class clientWorker implements Runnable{
 	
 	@Override
 	public void run() {
-		
+		try(ObjectInputStream iStream = new ObjectInputStream(socket.getInputStream())){
+			NameNodeReplyMessage msg = (NameNodeReplyMessage) iStream.readObject();
+			System.out.println("Reply Type :"+msg.getType().toString());
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}	
 }
 
