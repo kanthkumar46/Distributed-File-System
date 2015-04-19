@@ -1,7 +1,6 @@
 package com.dfs.messages;
 
 import java.io.Serializable;
-import java.util.List;
 
 import com.dfs.nodes.RequestType;
 
