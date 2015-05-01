@@ -1,12 +1,9 @@
 package com.dfs.nodes;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -21,6 +18,7 @@ import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
 import com.dfs.utils.Connector;
+import com.dfs.utils.Constants;
 
 public class Client {
 	private static InetAddress inetAddress;
@@ -117,7 +115,6 @@ class clientWorker implements Runnable{
 }
 
 class DFSCommand{
-	private static final long CHUNK_SIZE = 64 * 1024 *1024;
 	
 	public static int mkdir(String dir_path){
 		Connector connector = new Connector();
@@ -171,7 +168,7 @@ class DFSCommand{
 			System.exit(0);
 		}
 		
-		int noOfChuncks = (int) Math.ceil((double)fileLength/CHUNK_SIZE);
+		int noOfChuncks = (int) Math.ceil((double)fileLength/Constants.CHUNK_SIZE);
 		System.err.println(noOfChuncks);
 		
 		while(noOfChuncks != 0){
@@ -203,7 +200,7 @@ class DFSCommand{
 		
 		byte[] temp = new byte[1024];
 		try {
-			long remaining = CHUNK_SIZE;
+			long remaining = Constants.CHUNK_SIZE;
 			int bytesRead = 0;
 			while(remaining!=0 && (bytesRead = raf.read(temp)) != -1){
 				fos.write(temp,0,bytesRead);
