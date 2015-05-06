@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import com.dfs.blocks.Block;
+
 public class NameSpaceTree {
 
 	private NamespaceTreeNode root;
@@ -134,5 +136,9 @@ public class NameSpaceTree {
 		System.out.println(tree.put("/user/file2.txt", dataNodeList));
 		System.out.println(tree.put("/uss/file.1", dataNodeList));
 		System.out.println(tree.listFiles("/user"));
+	}
+
+	public Block getBlock(String blockId) {
+		return root.getBlockMapping(blockId);
 	}
 }

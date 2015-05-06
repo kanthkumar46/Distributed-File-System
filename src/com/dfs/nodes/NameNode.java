@@ -85,7 +85,7 @@ class NameNodeHandler implements Runnable {
 	private void put() {
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
 		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList);
-		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
+		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList),RequestType.PUT);
 		
 	}
 
@@ -169,7 +169,9 @@ class DataNodeAckHandler implements Runnable{
 	@Override
 	public void run() {
 		
-		String blkId;
+		String blkId = null;
+		
+		NameNode.tree.getBlock(blkId);
 		//NameNode.tree.
 	}
 	
