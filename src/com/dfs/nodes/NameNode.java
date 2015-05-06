@@ -10,12 +10,13 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dfs.blocks.Block;
+import com.dfs.blocks.BlockStatus;
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
@@ -137,7 +138,7 @@ class DataNodeAckReceiver implements Runnable{
 
 	@Override
 	public void run() {
-		try (ServerSocket serverSocket = new ServerSocket(Constants.PORT_NUM)) {
+		try (ServerSocket serverSocket = new ServerSocket(Constants.ACK_PORT_NUM)) {
 			while (true) {
 				Socket socket = serverSocket.accept();
 				ObjectInputStream stream = new ObjectInputStream(
@@ -168,11 +169,9 @@ class DataNodeAckHandler implements Runnable{
 	}
 	@Override
 	public void run() {
-		
-		String blkId = null;
-		
-		NameNode.tree.getBlock(blkId);
-		//NameNode.tree.
+		String blkId = ackMessage.getBlcokId();
+		Block blk = NameNode.tree.getBlock(blkId);
+		blk.setStatus(BlockStatus.COMPLETED);
 	}
 	
 }

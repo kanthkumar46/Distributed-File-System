@@ -9,6 +9,6 @@ public class Constants {
 	public static final int DEFAULT_REPLICATION =3;
 	
 	public static final long CHUNK_SIZE = 64 * 1024 *1024; // 64 MB
-
+	public static final int ACK_PORT_NUM = 5275;
 	public static final int DEFAULT_REPLICATION_FACTOR = 3;
 }
