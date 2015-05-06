@@ -173,11 +173,11 @@ class DataNodeAckHandler implements Runnable{
 	private AckMessage ackMessage;
 	
 	public DataNodeAckHandler(AckMessage ackMessage){
-		this.ackMessage = new AckMessage();
+		this.ackMessage = ackMessage;
 	}
 	@Override
 	public void run() {
-		String blkId = ackMessage.getBlcokId();
+		String blkId = ackMessage.getBlockId();
 		Block blk = NameNode.tree.getBlock(blkId);
 		blk.setStatus(BlockStatus.COMPLETED);
 	}

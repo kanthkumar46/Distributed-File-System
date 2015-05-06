@@ -3,14 +3,22 @@ package com.dfs.messages;
 import java.io.Serializable;
 
 public class AckMessage implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String blkId;
-	private String destinationPath;
 	private String ipAddress;
 	
-	public String getBlcokId() {
+	public AckMessage(String blkId, String ipAddress) {
+		this.setBlockId(blkId);
+		this.setIpAddress(ipAddress);
+	}
+	
+	public String getBlockId() {
 		return blkId;
 	}
-	public void setBlcokId(String blockId) {
+	public void setBlockId(String blockId) {
 		this.blkId = blockId;
 	}
 	public String getIpAddress() {
@@ -18,12 +26,6 @@ public class AckMessage implements Serializable{
 	}
 	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
-	}
-	public String getDestinationPath() {
-		return destinationPath;
-	}
-	public void setDestinationPath(String destinationPath) {
-		this.destinationPath = destinationPath;
 	}
 	
 }
