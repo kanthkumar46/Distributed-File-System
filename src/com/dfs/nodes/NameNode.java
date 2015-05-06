@@ -187,7 +187,7 @@ public class NameNode {
 	
 	public static List<String> getNodeList(int num) {
 		
-		int size = nodeToRackMapping.size();
+		/*int size = nodeToRackMapping.size();
 		Random rdm = new Random();
 		int firstReplication = rdm.nextInt(size);
 		int secondReplication = rdm.nextInt(size);
@@ -195,8 +195,12 @@ public class NameNode {
 		ArrayList<String> nodeList = new ArrayList<>();
 		nodeList.add(nodeToRackMapping.get(firstReplication));
 		nodeList.add(nodeToRackMapping.get(secondReplication));
-		nodeList.add(nodeToRackMapping.get(thirdReplication));		
-		return nodeList;
+		nodeList.add(nodeToRackMapping.get(thirdReplication));	*/
+		ArrayList<String> dataNodeList = new ArrayList<>();
+		dataNodeList.add("medusa.cs.rit.edu");
+		dataNodeList.add("doors.cs.rit.edu");
+		dataNodeList.add("buddy.cs.rit.edu");
+		return dataNodeList;
 	}
 
 	public NameNode() throws IOException {

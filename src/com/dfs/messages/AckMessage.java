@@ -1,6 +1,8 @@
 package com.dfs.messages;
 
-public class AckMessage {
+import java.io.Serializable;
+
+public class AckMessage implements Serializable{
 	private String blkId;
 	private String destinationPath;
 	private String ipAddress;

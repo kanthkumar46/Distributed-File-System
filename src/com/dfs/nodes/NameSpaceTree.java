@@ -38,6 +38,7 @@ public class NameSpaceTree {
 	private  boolean traverseDir(NamespaceTreeNode start, String [] dirList,int level,FileType type){
 		boolean visited = false;
 		if(level==dirList.length-2){
+			System.out.println("Dir added");
 			start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1]));
 			visited = true;
 			return visited;
@@ -58,11 +59,13 @@ public class NameSpaceTree {
 			
 			for(NamespaceTreeNode node : start.getChildren()){
 				if(node.getInfo().equals(dirList[dirList.length-1])){
+					System.out.println("File added");
 					fileCheck = true;
 					blkId = node.addBlock(dataNodeList);
 				}
 			}
 			if(!fileCheck){
+				System.out.println("File added");
 				NamespaceTreeNode node = new NamespaceTreeNode(type,dirList[level+1],dataNodeList);
 				start.getChildren().add(node);
 				blkId= node.addBlock(dataNodeList);
@@ -96,6 +99,7 @@ public class NameSpaceTree {
 			for(NamespaceTreeNode temp: root.getChildren()){
 				list.add(temp.getInfo());
 			}
+			System.out.println("Listing files");
 			return list;
 		}
 		
@@ -107,6 +111,7 @@ public class NameSpaceTree {
 				for(NamespaceTreeNode temp: node.getChildren()){
 					list.add(temp.getInfo());
 				}
+				System.out.println("Listing files ");
 				return list;
 			}
 			for(NamespaceTreeNode temp:node.getChildren()){
