@@ -1,7 +1,6 @@
 package com.dfs.nodes;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -15,7 +14,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.BlockReportMessage;
@@ -125,18 +123,13 @@ class DataNodeWorker implements Runnable{
 			FileOutputStream fos = new FileOutputStream(new File(blockPath+File.separator+reqMsg.getSourceFileName()));
 			System.out.println("Request Type :"+reqType.toString());
 			if(reqType.equals(RequestType.PUT)){
-<<<<<<< Updated upstream
-
-=======
 				byte[] buffer = new byte[1024];
 	            int len;
 	            while((len = gzipIS.read(buffer)) != -1){
 	                fos.write(buffer, 0, len);
 	            }
 	            fos.close();
->>>>>>> Stashed changes
 				AckMessage ack = new AckMessage((String)iStream.readObject(),DataNode.DATANODE_IP);
-
 				sendAckMessage(ack);
 			}
 			else if(reqType.equals(RequestType.GET)){
