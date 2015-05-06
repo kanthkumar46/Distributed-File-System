@@ -178,7 +178,7 @@ public class NameSpaceTree {
 		System.out.println(tree.listFiles("/user"));
 		tree.getBlocks();
 		List<BlocksMap> blkMap =tree.getBlockMap("/user/file2.txt");
-		for(BlocksMap b:blkMap){
+		for(BlocksMap b:blkMap) {
 			System.out.println("Block Id: "+b.getBlkId());
 			System.out.println("Block List: "+ b.getDatanodeInfo());
 		}

@@ -184,6 +184,26 @@ class DataNodeAckHandler implements Runnable{
 	
 }
 
+class BlockReport implements Runnable {
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+}
+
+class BlockReportHandler implements Runnable {
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+}
+
 public class NameNode {
 
 	private static List<String> nodeList;
@@ -245,6 +265,7 @@ public class NameNode {
 		ExecutorService service = Executors.newFixedThreadPool(5);
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());
+		//service.execute(new BlockReport());
 	}
 
 }
