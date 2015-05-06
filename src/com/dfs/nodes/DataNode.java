@@ -99,7 +99,7 @@ class DataNodeWorker implements Runnable{
 			System.out.println("Request Type :"+reqType.toString());
 			if(reqType.equals(RequestType.PUT)){
 				AckMessage ack = new AckMessage();
-				ack.setBlcokId((String)iStream.readObject());
+				ack.setBlockId((String)iStream.readObject());
 				sendAckMessage(ack);
 			}
 			else if(reqType.equals(RequestType.GET)){
