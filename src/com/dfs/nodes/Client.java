@@ -1,11 +1,11 @@
 package com.dfs.nodes;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -14,7 +14,9 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.GZIPOutputStream;
 
+import com.dfs.messages.ClientPutRequestMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
@@ -58,8 +60,10 @@ public class Client {
 		if(command.equals("-mkdir")){
 			if(args.length != 2)
 				System.err.println("print usage");
-			else
+			else{
 				System.out.println(args[1]);
+				DFSCommand.mkdir(args[1]);
+			}
 		}
 		else if(command.equals("-ls")){
 			if(args.length != 2)
@@ -111,22 +115,32 @@ class clientWorker implements Runnable{
 				System.out.println(msg.getFileList());
 			}
 			else if (reqType.equals(RequestType.PUT)) {
-				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream.readObject();
-				String blockId = msg.getBlkId();
-				transferBlockToDataNode(blockId,msg.getDataNodeList());
+				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream.readObject(); 
+				transferBlockToDataNode(msg.getBlkId(),msg.getSourcePath(),msg.getDestinationPath(),msg.getDataNodeList());
 			}
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void transferBlockToDataNode(String blockId, List<String> dataNodeList) {
+	private void transferBlockToDataNode(String blockId, String chunckPath, String destPath, List<String> dataNodeList) {
+		System.err.println(blockId +"  "+chunckPath);
+		System.err.println(dataNodeList);
 		String dataNode = dataNodeList.get(0);
 		System.err.println("transfer initiated to dataNode : "+dataNode);
-		try(Socket socket = new Socket(dataNode, 8000)){
+		try(Socket socket = new Socket(dataNode, 8000);
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-			out.writeObject(RequestType.PUT);
-			out.writeObject(blockId);
+			FileInputStream fis = new FileInputStream(new File(chunckPath));
+			GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream())){
+			ClientPutRequestMessage msg = new ClientPutRequestMessage(Client.CLIENT_IP, Client.CLIENT_PORT, blockId, 
+					destPath, RequestType.PUT, dataNodeList);
+			out.writeObject(msg);
+			byte[] buffer = new byte[1024];
+            int len;
+			while((len = fis.read(buffer)) != -1){
+				gzipOS.write(buffer, 0, len);
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -138,7 +152,7 @@ class DFSCommand{
 	
 	public static int mkdir(String dir_path){
 		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode();
+		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			Message makeDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
@@ -155,7 +169,7 @@ class DFSCommand{
 	
 	public static int ls(String dir_path){
 		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode();
+		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			Message listDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
@@ -176,7 +190,7 @@ class DFSCommand{
 	
 	public static int put(String sourcePath, String destinationPath){
 		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode();
+		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
 		
 		RandomAccessFile ra_SourceFile = null;
 		long fileLength = 0;

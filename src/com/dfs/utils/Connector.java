@@ -10,7 +10,7 @@ import java.net.Socket;
 public class Connector {
 private static final String MASTER_PATH = "master";
 	
-	public Socket connectToNameNode(){
+	public Socket connectToNameNode(int portNo){
 		String nameNode = null;
 		
 		try(BufferedReader br = new BufferedReader(new InputStreamReader
@@ -22,7 +22,7 @@ private static final String MASTER_PATH = "master";
 		
 		Socket socket = null;
 		try{
-			socket = new Socket(nameNode, 5285);
+			socket = new Socket(nameNode, portNo);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -37,6 +37,5 @@ private static final String MASTER_PATH = "master";
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 }
