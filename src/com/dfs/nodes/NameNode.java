@@ -79,14 +79,22 @@ class NameNodeHandler implements Runnable {
 			list();
 		} else if(message.getRequestType().equals(RequestType.PUT)){
 			put();
+		} else if (message.getRequestType().equals(RequestType.GET)){
+			get();
 		}
 
+	}
+
+	private void get() {
+		
+		List<BlocksMap> blkMap = NameNode.tree.getBlockMap(message.getSourcePath());
+		
 	}
 
 	private void put() {
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
 		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList);
-		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList),RequestType.PUT);
+		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
 		
 	}
 
@@ -153,7 +161,7 @@ class DataNodeAckReceiver implements Runnable{
 		} catch (ClassNotFoundException e) {
 			
 			e.printStackTrace();
-		}finally{
+		}finally {
 			
 		}
 		
@@ -192,10 +200,10 @@ public class NameNode {
 		int firstReplication = rdm.nextInt(size);
 		int secondReplication = rdm.nextInt(size);
 		int thirdReplication = rdm.nextInt(size);
-		ArrayList<String> nodeList = new ArrayList<>();
-		nodeList.add(nodeToRackMapping.get(firstReplication));
-		nodeList.add(nodeToRackMapping.get(secondReplication));
-		nodeList.add(nodeToRackMapping.get(thirdReplication));	*/
+		ArrayList<String> dataNodeList = new ArrayList<>();
+		dataNodeList.add(nodeToRackMapping.get(firstReplication));
+		dataNodeList.add(nodeToRackMapping.get(secondReplication));
+		dataNodeList.add(nodeToRackMapping.get(thirdReplication));	*/
 		ArrayList<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("medusa.cs.rit.edu");
 		dataNodeList.add("doors.cs.rit.edu");

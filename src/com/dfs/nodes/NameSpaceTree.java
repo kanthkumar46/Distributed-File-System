@@ -3,7 +3,9 @@ package com.dfs.nodes;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import com.dfs.blocks.Block;
 
@@ -129,6 +131,39 @@ public class NameSpaceTree {
 		
 	}	
 	
+	public void getBlocks(){
+		Map<String,Block> blkMap = root.getBlockMapping();
+		Set<String> blkIds =blkMap.keySet();
+		for(Map.Entry<String, Block> e : blkMap.entrySet()){
+			
+			System.out.println("Block ID: "+e.getKey());
+			System.out.println("Block Status: "+e.getValue().getStatus());
+			
+		}
+	}
+	
+	public Block getBlock(String blockId) {
+		return root.getBlockMapping(blockId);
+	}
+
+	public List<BlocksMap> dfsTraverse(NamespaceTreeNode start,String[] dirList,int level,FileType type){
+		
+		if(level==dirList.length-1){
+			return start.getFileInfo().getBlkMap();
+		}
+		for(NamespaceTreeNode node: start.getChildren()){
+			if(node.getInfo().equals(dirList[level+1])){
+				return dfsTraverse(node,dirList,++level,type);
+			}
+		}
+		return null;
+		
+	}
+	public List<BlocksMap> getBlockMap(String sourcePath) {
+		String [] path = sourcePath.split("/");
+		return dfsTraverse(root,path,0,FileType.FILE);
+	}
+	
 	public static void main(String[] args) {
 		NameSpaceTree tree = new NameSpaceTree();
 		tree.addNode("/user", 3, FileType.DIR);
@@ -141,9 +176,13 @@ public class NameSpaceTree {
 		System.out.println(tree.put("/user/file2.txt", dataNodeList));
 		System.out.println(tree.put("/uss/file.1", dataNodeList));
 		System.out.println(tree.listFiles("/user"));
+		tree.getBlocks();
+		List<BlocksMap> blkMap =tree.getBlockMap("/user/file.txt");
+		for(BlocksMap b:blkMap){
+			
+		}
+		
 	}
 
-	public Block getBlock(String blockId) {
-		return root.getBlockMapping(blockId);
-	}
+	
 }

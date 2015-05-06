@@ -15,7 +15,7 @@ public class NamespaceTreeNode {
 	private List<NamespaceTreeNode> children;
 	private FileType fileType;
 	private FileInfo fileInfo;
-	private static Map<String,Block> blockMap;
+	private static Map<String,Block> blockMap = new HashMap<>();;
 	
 	public NamespaceTreeNode(FileType type, String info){
 		if (type == FileType.DIR) {
@@ -25,6 +25,7 @@ public class NamespaceTreeNode {
 			this.setFileInfo(null);
 		} 
 	}
+	
 	public NamespaceTreeNode(FileType type, String info,
 			List<String> dataNodeList) {
 		if(type == FileType.FILE) {
@@ -32,13 +33,17 @@ public class NamespaceTreeNode {
 			this.info = info;
 			this.setFileType(type);
 			fileInfo = new FileInfo();
-			blockMap = new HashMap<>();
+			
 		}
 
 	}
 	
 	public Block getBlockMapping(String key){
 		return blockMap.get(key);
+	}
+	
+	public Map<String,Block> getBlockMapping(){
+		return blockMap;
 	}
 
 	public String addBlock(List<String> dataNodeList) {

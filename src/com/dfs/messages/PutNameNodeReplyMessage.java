@@ -11,6 +11,7 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 	private String sourcePath;
 	private String blkId;
 	private static final long serialVersionUID = 1L;
+	private String destinationPath;
 
 	public PutNameNodeReplyMessage(String sourcePath,String blkId,List<String> dataNodeList) {
 		super(0, RequestType.PUT);
@@ -24,6 +25,15 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 		this.setBlkId(blkId);
 
 		
+	}
+
+	public PutNameNodeReplyMessage(String sourcePath2, String success,
+			List<String> dataNodeList2, String destinationPath) {
+		super(0,RequestType.PUT);
+		this.dataNodeList = dataNodeList2;
+		this.sourcePath = sourcePath2;
+		this.blkId = success;
+		this.setDestinationPath(destinationPath);
 	}
 
 	public List<String> getDataNodeList() {
@@ -48,6 +58,14 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 
 	public void setBlkId(String blkId) {
 		this.blkId = blkId;
+	}
+
+	public String getDestinationPath() {
+		return destinationPath;
+	}
+
+	public void setDestinationPath(String destinationPath) {
+		this.destinationPath = destinationPath;
 	}
 	
 }
