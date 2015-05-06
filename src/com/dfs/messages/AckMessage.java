@@ -7,7 +7,7 @@ public class AckMessage implements Serializable{
 	
 	private String ipAddress;
 	
-	public String getBlcokId() {
+	public String getBlockId() {
 		return blkId;
 	}
 	public void setBlockId(String blockId) {

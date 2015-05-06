@@ -177,7 +177,7 @@ class DataNodeAckHandler implements Runnable{
 	}
 	@Override
 	public void run() {
-		String blkId = ackMessage.getBlcokId();
+		String blkId = ackMessage.getBlockId();
 		Block blk = NameNode.tree.getBlock(blkId);
 		blk.setStatus(BlockStatus.COMPLETED);
 	}
