@@ -10,7 +10,7 @@ public class NameSpaceTree {
 	private NamespaceTreeNode root;
 	
 	public NameSpaceTree() {
-		root = new NamespaceTreeNode(FileType.DIR,"");
+		root = new NamespaceTreeNode(FileType.DIR,"",null);
 	}
 	
 	/***
@@ -21,8 +21,8 @@ public class NameSpaceTree {
 	 * @return
 	 */
 	public boolean addNode(String path,int replication,FileType type){
-		String [] dirList = path.split("\\");
-		return traverse(root,dirList,0,type);
+		String [] dirList = path.split("/");
+		return traverse(root,dirList,0,type,null);
 	}
 	
 	/**
@@ -33,16 +33,19 @@ public class NameSpaceTree {
 	 * @param type		
 	 * @return			whether the path is found or not.
 	 */
-	private  boolean traverse(NamespaceTreeNode start, String [] dirList,int level,FileType type){
+	private  boolean traverse(NamespaceTreeNode start, String [] dirList,int level,FileType type,List<String> dataNodeList){
 		boolean visited = false;
 		if(level==dirList.length-2){
-			start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1]));
+			if(type == FileType.DIR)
+				start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1],null));
+			else
+				start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1],dataNodeList));
 			visited = true;
 			return visited;
 		}
 		for(NamespaceTreeNode node: start.getChildren()){
-			if(node.getInfo().equals(dirList[level])){
-				return traverse(node,dirList,level++,type);
+			if(node.getInfo().equals(dirList[level+1])){
+				return traverse(node,dirList,++level,type,dataNodeList);
 			}
 		}
 		return visited;
@@ -62,10 +65,17 @@ public class NameSpaceTree {
 		int i=0;
 		boolean stop= false;
 		
+		if(nodes.length==0){
+			for(NamespaceTreeNode temp: root.getChildren()){
+				list.add(temp.getInfo());
+			}
+			return list;
+		}
+		
 		while(!queue.isEmpty() && !stop){
-			i++;
+			
 			NamespaceTreeNode node = queue.remove();
-			if(node.getInfo().equals(nodes[i])){
+			if(node.getInfo().equals(nodes[nodes.length-1])){
 				stop = true;
 				for(NamespaceTreeNode temp: node.getChildren()){
 					list.add(temp.getInfo());
@@ -75,8 +85,25 @@ public class NameSpaceTree {
 			for(NamespaceTreeNode temp:node.getChildren()){
 				queue.add(temp);
 			}
+			i++;
 		}
 		
 		return null;
+	}
+
+	public boolean put(String destinationPath,List<String> dataNodeList) {
+		String dirList[] = destinationPath.split("/");
+		return traverse(root,dirList,0,FileType.FILE,dataNodeList);
+		
 	}	
+	
+	public static void main(String[] args) {
+		NameSpaceTree tree = new NameSpaceTree();
+		tree.addNode("/user", 3, FileType.DIR);
+		List<String> dataNodeList = new ArrayList<>();
+		dataNodeList.add("1");
+		dataNodeList.add("2");
+		dataNodeList.add("3");		
+		tree.put("/user/file1.txt", dataNodeList);
+	}
 }

@@ -21,6 +21,5 @@ public class  ListNameNodeReplyMessage extends NameNodeReplyMessage{
 	public void setFileList(List<String> fileList) {
 		this.fileList = fileList;
 	}
-	
 }
 

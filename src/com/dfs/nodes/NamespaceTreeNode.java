@@ -2,6 +2,10 @@ package com.dfs.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import com.dfs.blocks.Block;
+import com.dfs.blocks.BlockStatus;
 
 public class NamespaceTreeNode {
 
@@ -10,7 +14,7 @@ public class NamespaceTreeNode {
 	private FileType fileType;
 	private FileInfo fileInfo;
 	
-	public NamespaceTreeNode(FileType type, String info){
+	public NamespaceTreeNode(FileType type, String info, List<String> dataNodeList){
 		if(type==FileType.DIR){
 			this.children = new ArrayList<>();
 			this.info=info;
@@ -21,7 +25,12 @@ public class NamespaceTreeNode {
 			this.children = null;
 			this.info=info;
 			this.setFileType(type);
-			this.setFileInfo(new FileInfo());
+			
+			if(fileInfo !=null){
+				fileInfo.addBlock(new Block(UUID.randomUUID().toString(),BlockStatus.PROGRESS),dataNodeList);
+			}else{
+				fileInfo = new FileInfo(new Block(UUID.randomUUID().toString(),BlockStatus.PROGRESS),3,dataNodeList);
+			}
 		}
 		
 	}
