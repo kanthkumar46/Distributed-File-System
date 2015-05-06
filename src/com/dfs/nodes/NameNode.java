@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dfs.messages.AckMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
@@ -82,11 +83,9 @@ class NameNodeHandler implements Runnable {
 	}
 
 	private void put() {
-		
-		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
-		boolean success = NameNode.tree.put(message.getDestinationPath(),dataNodeList);
-		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),"",dataNodeList),RequestType.PUT);
+		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList);
+		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
 		
 	}
 
@@ -128,6 +127,52 @@ class NameNodeHandler implements Runnable {
 
 	}
 
+}
+
+class DataNodeAckReceiver implements Runnable{
+	
+	public DataNodeAckReceiver(){
+		
+	}
+
+	@Override
+	public void run() {
+		try (ServerSocket serverSocket = new ServerSocket(Constants.PORT_NUM)) {
+			while (true) {
+				Socket socket = serverSocket.accept();
+				ObjectInputStream stream = new ObjectInputStream(
+						socket.getInputStream());
+				AckMessage message = (AckMessage)stream.readObject();
+				ExecutorService service = Executors.newFixedThreadPool(4);
+				service.execute(new DataNodeAckHandler(message));
+			}
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			
+			e.printStackTrace();
+		}finally{
+			
+		}
+		
+	}
+}
+
+class DataNodeAckHandler implements Runnable{
+
+	private AckMessage ackMessage;
+	
+	public DataNodeAckHandler(AckMessage ackMessage){
+		this.ackMessage = new AckMessage();
+	}
+	@Override
+	public void run() {
+		
+		String blkId;
+		//NameNode.tree.
+	}
+	
 }
 
 public class NameNode {
@@ -186,6 +231,7 @@ public class NameNode {
 		NameNode node = new NameNode();
 		ExecutorService service = Executors.newFixedThreadPool(5);
 		service.execute(new NameNodeClientRequest());
+		service.execute(new DataNodeAckReceiver());
 	}
 
 }

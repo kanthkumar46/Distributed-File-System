@@ -2,7 +2,9 @@ package com.dfs.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.dfs.blocks.Block;
+import com.dfs.utils.Constants;
 
 public class FileInfo {
 
@@ -10,6 +12,11 @@ public class FileInfo {
 	private List<Block> blocks;
 	private List<BlocksMap> blkMap;
 	
+	public FileInfo(){
+		this.replication = Constants.DEFAULT_REPLICATION;
+		this.blocks = new ArrayList<>();
+		this.blkMap= new ArrayList<>();
+	}
 	public FileInfo(Block blk, int replication,List<String> dataNodeList){
 		blocks = new ArrayList<>();
 		this.setReplication(replication);

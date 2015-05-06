@@ -7,7 +7,7 @@ public class BlocksMap {
 	private String blkId;
 	private List<String> datanodeInfo;
 	
-	public BlocksMap(String blkId, List<String> datanodeInfo){
+	public BlocksMap(String blkId, List<String> datanodeInfo) {
 		this.blkId = blkId;
 		this.datanodeInfo = datanodeInfo;
 	}
