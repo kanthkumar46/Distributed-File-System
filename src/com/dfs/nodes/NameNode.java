@@ -173,7 +173,7 @@ class DataNodeAckHandler implements Runnable{
 	private AckMessage ackMessage;
 	
 	public DataNodeAckHandler(AckMessage ackMessage){
-		this.ackMessage = new AckMessage();
+		this.ackMessage = ackMessage;
 	}
 	@Override
 	public void run() {
