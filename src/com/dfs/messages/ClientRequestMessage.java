@@ -5,21 +5,23 @@ import java.util.List;
 
 import com.dfs.nodes.RequestType;
 
-public class ClientPutRequestMessage implements Serializable{
+public class ClientRequestMessage implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	private String ipAddress;
 	private int portNum;
-	private String BlkId;
+	private String blkId;
+	private String sourceFileName;
 	private String destinationPath;
 	private RequestType requestType;
 	private List<String> dataNodeList;
 	
-	public ClientPutRequestMessage(String ipAddress, int portNum, String blkId,
-			String destPath, RequestType req, List<String> dnList) {
+	public ClientRequestMessage(String ipAddress, int portNum, String blkId,
+			String srcFileName, String destPath, RequestType req, List<String> dnList) {
 		this.setIpAddress(ipAddress);
 		this.setPortNum(portNum);
 		this.setBlkId(blkId);
+		this.setSourceFileName(srcFileName);
 		this.setDestinationPath(destPath);
 		this.setRequestType(req);
 		this.setDataNodeList(dnList);
@@ -66,11 +68,19 @@ public class ClientPutRequestMessage implements Serializable{
 	}
 
 	public String getBlkId() {
-		return BlkId;
+		return blkId;
 	}
 
 	public void setBlkId(String blkId) {
-		BlkId = blkId;
+		this.blkId = blkId;
+	}
+
+	public String getSourceFileName() {
+		return sourceFileName;
+	}
+
+	public void setSourceFileName(String sourceFileName) {
+		this.sourceFileName = sourceFileName;
 	}
 	
 	

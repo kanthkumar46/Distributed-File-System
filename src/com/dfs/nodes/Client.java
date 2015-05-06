@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPOutputStream;
 
-import com.dfs.messages.ClientPutRequestMessage;
+import com.dfs.messages.ClientRequestMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
@@ -132,8 +132,10 @@ class clientWorker implements Runnable{
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 			FileInputStream fis = new FileInputStream(new File(chunckPath));
 			GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream())){
-			ClientPutRequestMessage msg = new ClientPutRequestMessage(Client.CLIENT_IP, Client.CLIENT_PORT, blockId, 
-					destPath, RequestType.PUT, dataNodeList);
+			String sourceFileName = chunckPath.split("_")[1];
+			System.err.println(sourceFileName);
+			ClientRequestMessage msg = new ClientRequestMessage(Client.CLIENT_IP, Client.CLIENT_PORT, blockId, 
+					sourceFileName, destPath, RequestType.PUT, dataNodeList);
 			out.writeObject(msg);
 			byte[] buffer = new byte[1024];
             int len;
