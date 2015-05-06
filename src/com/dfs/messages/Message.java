@@ -3,6 +3,7 @@ package com.dfs.messages;
 import java.io.Serializable;
 
 import com.dfs.nodes.RequestType;
+import com.dfs.utils.Constants;
 
 public class Message implements Serializable{
 	
@@ -37,7 +38,10 @@ public class Message implements Serializable{
 		this.portNum = portNum;
 		this.setSourcePath(sourcePath);
 		this.setDestinationPath(destPath);
-		this.replication = replication;
+		if(replication == 0)
+			this.replication = Constants.DEFAULT_REPLICATION_FACTOR;
+		else
+			this.replication = replication;
 		this.setRequestType(type);
 	}
 

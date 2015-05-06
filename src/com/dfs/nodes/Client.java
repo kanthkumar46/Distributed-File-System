@@ -1,22 +1,24 @@
 package com.dfs.nodes;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
+import com.dfs.messages.PutNameNodeReplyMessage;
 import com.dfs.utils.Connector;
 import com.dfs.utils.Constants;
 
@@ -108,10 +110,28 @@ class clientWorker implements Runnable{
 				ListNameNodeReplyMessage msg = (ListNameNodeReplyMessage) iStream.readObject();
 				System.out.println(msg.getFileList());
 			}
+			else if (reqType.equals(RequestType.PUT)) {
+				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream.readObject();
+				String blockId = msg.getBlkId();
+				transferBlockToDataNode(blockId,msg.getDataNodeList());
+			}
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-	}	
+	}
+
+	private void transferBlockToDataNode(String blockId, List<String> dataNodeList) {
+		String dataNode = dataNodeList.get(0);
+		System.err.println("transfer initiated to dataNode : "+dataNode);
+		try(Socket socket = new Socket(dataNode, 8000)){
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			out.writeObject(RequestType.PUT);
+			out.writeObject(blockId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
 
 class DFSCommand{
@@ -158,11 +178,12 @@ class DFSCommand{
 		Connector connector = new Connector();
 		Socket socket= connector.connectToNameNode();
 		
-		RandomAccessFile raf = null;
+		RandomAccessFile ra_SourceFile = null;
 		long fileLength = 0;
+		File sourceFile = new File(sourcePath);
 		try {
-			raf = new RandomAccessFile(new File(sourcePath), "r");
-			fileLength = raf.length();
+			ra_SourceFile = new RandomAccessFile(sourceFile, "r");
+			fileLength = ra_SourceFile.length();
 		} catch (IOException e) {
 			System.out.println("source file not found");
 			System.exit(0);
@@ -172,29 +193,33 @@ class DFSCommand{
 		System.err.println(noOfChuncks);
 		
 		while(noOfChuncks != 0){
-			readAndCreateChunk(raf,noOfChuncks);
-			requestDataNodes(socket);
+			File tempDir = new File("temp");
+			if(!tempDir.exists())
+				tempDir.mkdir();
+			String chunckPath = "temp//chunk"+noOfChuncks+"_"+sourceFile.getName();
+			readAndCreateChunk(ra_SourceFile,chunckPath);
+			requestDataNodes(socket,chunckPath,destinationPath);
 			noOfChuncks--;
 		}
 		
 		return 0;
 	}
 	
-	private static void requestDataNodes(Socket socket) {
+	private static void requestDataNodes(Socket socket,String chunckPath, String destinationPath) {
 		try(ObjectOutputStream stream = new ObjectOutputStream(socket.getOutputStream())) {
 			Message dataNodeRequest = new Message(Client.CLIENT_IP, Client.CLIENT_PORT,
-					"sample.txt"," ",0,RequestType.PUT);
+					chunckPath,destinationPath,0,RequestType.PUT);
 			stream.writeObject(dataNodeRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void readAndCreateChunk(RandomAccessFile raf,int i) {
+	private static void readAndCreateChunk(RandomAccessFile ra_SourceFile,String chunckPath) {
 		FileOutputStream fos = null;
 		try {
-			fos = new FileOutputStream(new File("chunk_"+i+".csv"));
-		} catch (FileNotFoundException e) {
+			fos = new FileOutputStream(new File(chunckPath));
+		} catch (IOException e) {
 			System.out.println("cannot create a chuck file");
 		}
 		
@@ -202,7 +227,7 @@ class DFSCommand{
 		try {
 			long remaining = Constants.CHUNK_SIZE;
 			int bytesRead = 0;
-			while(remaining!=0 && (bytesRead = raf.read(temp)) != -1){
+			while(remaining!=0 && (bytesRead = ra_SourceFile.read(temp)) != -1){
 				fos.write(temp,0,bytesRead);
 				remaining -= 1024;
 			}
