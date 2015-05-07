@@ -56,6 +56,18 @@ public class NameSpaceTree {
 		return visited;
 	}
 	
+	
+	/****
+	 * Traverse the n-ary file structure using DFS.
+	 * 
+	 * @param start			starts at root.
+	 * @param dirList		the path list which needs to be traversed
+	 * @param level			current level.
+	 * @param type			whether dir or file ?
+	 * @param dataNodeList	list of datanodes for the file block.	
+	 * @param offset		start offset of the block in the file.
+	 * @return				Block Id.
+	 */
 	private  String traverseFile(NamespaceTreeNode start, String [] dirList,int level,FileType type,
 			List<String> dataNodeList,long offset){
 		
@@ -154,7 +166,14 @@ public class NameSpaceTree {
 	}
 
 	
-	
+	/***
+	 * Traverse to get the list of BlockMap.
+	 * @param start				Start at the root
+	 * @param dirList			Path to traverse.
+	 * @param level				current level in the tree
+	 * @param type				whether dir or file?
+	 * @return					blockIds and datanode List.
+	 */
 	public List<BlocksMap> dfsTraverse(NamespaceTreeNode start,String[] dirList,int level,FileType type){
 		
 		if(level==dirList.length-1){
@@ -168,6 +187,12 @@ public class NameSpaceTree {
 		return null;
 		
 	}
+	
+	/***
+	 *  Method sends the sorted list of blocks and datanode mappings according to byte offset.
+	 * @param sourcePath			path to traverse
+	 * @return						sorted list according to byte offset.
+	 */
 	public List<BlocksMap> getBlockMap(String sourcePath) {
 		String [] path = sourcePath.split("/");
 		List<BlocksMap>b=dfsTraverse(root,path,0,FileType.FILE);
