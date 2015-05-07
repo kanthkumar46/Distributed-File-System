@@ -1,5 +1,6 @@
 package com.dfs.nodes;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -115,7 +116,7 @@ class DataNodeWorker implements Runnable{
 			GZIPInputStream gzipIS = new GZIPInputStream(client.getInputStream())){
 			ClientRequestMessage reqMsg = (ClientRequestMessage) iStream.readObject();
 			RequestType reqType = reqMsg.getRequestType();
-			FileOutputStream blockFile = createBlockFile(reqMsg);
+			BufferedOutputStream blockFile = new BufferedOutputStream(createBlockFile(reqMsg));
 			System.out.println("Request Type :"+reqType.toString());
 			if(reqType.equals(RequestType.PUT)){
 				byte[] buffer = new byte[1024];

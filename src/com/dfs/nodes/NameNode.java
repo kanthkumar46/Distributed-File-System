@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import com.dfs.blocks.Block;
 import com.dfs.blocks.BlockStatus;
 import com.dfs.messages.AckMessage;
+import com.dfs.messages.GetNameNodeReplyMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
@@ -89,13 +90,14 @@ class NameNodeHandler implements Runnable {
 	private void get() {
 		
 		List<BlocksMap> blkMap = NameNode.tree.getBlockMap(message.getSourcePath());
+		sendReply(new GetNameNodeReplyMessage(blkMap),RequestType.GET);
 		
 	}
 
 	private void put() {
-		// TODO:
+		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
-		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList,123);
+		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset());
 		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
 		
 	}
@@ -191,7 +193,7 @@ class BlockReport implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 	
@@ -201,7 +203,7 @@ class BlockReportHandler implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 	

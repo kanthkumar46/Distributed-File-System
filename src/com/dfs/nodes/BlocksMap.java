@@ -1,10 +1,11 @@
 package com.dfs.nodes;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.dfs.blocks.Block;
 
-public class BlocksMap implements Comparable<BlocksMap>{
+public class BlocksMap implements Comparable<BlocksMap>,Serializable{
 
 	private Block blkId;
 	private List<String> datanodeInfo;

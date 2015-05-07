@@ -21,4 +21,5 @@ public class Constants {
 	public static final int CLINET_ACK_PORT_NUM = 8020;
 	
 	public static final int DATANODE_PORT = 9000;
+	public static final int CLIENT_DATANODE_PORT=9090;
 }

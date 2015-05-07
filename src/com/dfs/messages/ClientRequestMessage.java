@@ -26,6 +26,16 @@ public class ClientRequestMessage implements Serializable{
 		this.setRequestType(req);
 		this.setDataNodeList(dnList);
 	}
+	
+	public ClientRequestMessage(String ipAddress, int portNum, String blkId,
+			String srcFileName, RequestType req) {
+		this.setIpAddress(ipAddress);
+		this.setPortNum(portNum);
+		this.setBlkId(blkId);
+		this.setSourceFileName(srcFileName);
+		this.setRequestType(req);
+		
+	}
 
 	public String getIpAddress() {
 		return ipAddress;
