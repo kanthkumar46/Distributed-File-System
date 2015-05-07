@@ -2,20 +2,22 @@ package com.dfs.nodes;
 
 import java.util.List;
 
-public class BlocksMap {
+import com.dfs.blocks.Block;
 
-	private String blkId;
+public class BlocksMap implements Comparable<BlocksMap>{
+
+	private Block blkId;
 	private List<String> datanodeInfo;
 	
-	public BlocksMap(String blkId, List<String> datanodeInfo) {
+	public BlocksMap(Block blkId, List<String> datanodeInfo) {
 		this.blkId = blkId;
 		this.datanodeInfo = datanodeInfo;
 	}
 	
-	public String getBlkId() {
+	public Block getBlkId() {
 		return blkId;
 	}
-	public void setBlkId(String blkId) {
+	public void setBlkId(Block blkId) {
 		this.blkId = blkId;
 	}
 	public List<String> getDatanodeInfo() {
@@ -23,5 +25,11 @@ public class BlocksMap {
 	}
 	public void setDatanodeInfo(List<String> datanodeInfo) {
 		this.datanodeInfo = datanodeInfo;
+	}
+
+	@Override
+	public int compareTo(BlocksMap o) {
+		return this.blkId.compareTo(o.getBlkId());
+		
 	}
 }

@@ -1,6 +1,7 @@
 package com.dfs.nodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,12 +47,13 @@ public class NamespaceTreeNode {
 		return blockMap;
 	}
 
-	public String addBlock(List<String> dataNodeList) {
+	public String addBlock(List<String> dataNodeList,long offset) {
 		String blockId = UUID.randomUUID().toString();
 		Block blk = new Block(blockId,
-				BlockStatus.PROGRESS);
+				BlockStatus.PROGRESS,offset);
 		fileInfo.addBlock(blk, dataNodeList);
 		blockMap.put(blockId, blk);
+		
 		return blockId;
 	}
 

@@ -1,13 +1,30 @@
 package com.dfs.blocks;
 
-public class Block {
+public class Block implements Comparable<Block>{
 
 	private String blockId;
 	private BlockStatus status;
+	private Long offset;
 	
-	public Block(String blockId, BlockStatus status){
+	
+	/**
+	 * @return the offset
+	 */
+	public Long getOffset() {
+		return offset;
+	}
+
+	/**
+	 * @param offset the offset to set
+	 */
+	public void setOffset(Long offset) {
+		this.offset = offset;
+	}
+
+	public Block(String blockId, BlockStatus status,long offset){
 		this.blockId = blockId;
 		this.status = status;
+		this.offset = offset;
 	}
 
 	public String getBlockId() {
@@ -24,6 +41,12 @@ public class Block {
 
 	public void setStatus(BlockStatus status) {
 		this.status = status;
+	}
+
+	@Override
+	public int compareTo(Block o) {
+		
+		return this.offset.compareTo(o.offset);
 	}
 	
 	

@@ -22,7 +22,7 @@ public class FileInfo {
 		this.setReplication(replication);
 		blocks.add(blk);
 		blkMap=new ArrayList<>();
-		blkMap.add(new BlocksMap(blk.getBlockId(),dataNodeList));
+		blkMap.add(new BlocksMap(blk,dataNodeList));
 	}
 	
 	public List<Block> getBlocks() {
@@ -31,7 +31,7 @@ public class FileInfo {
 
 	public void addBlock(Block e,List<String> dataNodeList){
 		this.blocks.add(e);
-		blkMap.add(new BlocksMap(e.getBlockId(),dataNodeList));
+		blkMap.add(new BlocksMap(e,dataNodeList));
 	}
 
 	public void setBlocks(List<Block> blocks) {

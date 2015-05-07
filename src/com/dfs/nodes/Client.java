@@ -32,7 +32,7 @@ public class Client {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		CLIENT_IP = inetAddress.getHostAddress();
+		CLIENT_IP = inetAddress.getHostName();
 	}
 	
 	Runnable replyHandler = new Runnable() {
@@ -117,6 +117,7 @@ class clientWorker{
 				if(Client.NO_OF_CHUNCKS == 0)
 					Client.executor.shutdownNow();
 			}
+			socket.close();
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
