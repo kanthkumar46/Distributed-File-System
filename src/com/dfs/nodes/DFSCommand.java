@@ -66,7 +66,8 @@ class DFSCommand {
 
 	public static int put(String sourcePath, String destinationPath) {
 		Connector connector = new Connector();
-		Socket socket = connector.connectToNameNode(Constants.PORT_NUM);
+
+	
 
 		RandomAccessFile ra_SourceFile = null;
 		long fileLength = 0;
@@ -88,11 +89,12 @@ class DFSCommand {
 			File tempDir = new File("temp");
 			if (!tempDir.exists())
 				tempDir.mkdir();
-			String chunckPath = "temp//chunk" + noOfChuncks + "_"
-					+ sourceFile.getName();
-			long chunkByteOffset = readAndCreateChunk(ra_SourceFile, chunckPath);
-			requestDataNodes(socket, chunckPath, destinationPath,
-					chunkByteOffset);
+
+			String chunckPath = "temp//chunk"+noOfChuncks+"_"+sourceFile.getName();
+			long chunkByteOffset = readAndCreateChunk(ra_SourceFile,chunckPath);
+			Socket socket = connector.connectToNameNode(Constants.PORT_NUM);
+			requestDataNodes(socket,chunckPath,destinationPath,chunkByteOffset);
+
 			noOfChuncks--;
 		}
 
