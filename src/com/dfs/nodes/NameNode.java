@@ -45,6 +45,7 @@ class NameNodeClientRequest implements Runnable {
 				Message message = (Message) stream.readObject();
 				ExecutorService service = Executors.newFixedThreadPool(5);
 				service.execute(new NameNodeHandler(message));
+				
 				socket.close();
 			}
 		} catch (ClassNotFoundException e) {
