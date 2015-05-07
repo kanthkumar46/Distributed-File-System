@@ -1,11 +1,14 @@
 package com.dfs.nodes;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.Set;
 
 import com.dfs.blocks.Block;
 
@@ -53,7 +56,8 @@ public class NameSpaceTree {
 		return visited;
 	}
 	
-	private  String traverseFile(NamespaceTreeNode start, String [] dirList,int level,FileType type,List<String> dataNodeList){
+	private  String traverseFile(NamespaceTreeNode start, String [] dirList,int level,FileType type,
+			List<String> dataNodeList,long offset){
 		
 		String blkId = null;
 		if(level==dirList.length-2){
@@ -63,21 +67,21 @@ public class NameSpaceTree {
 				if(node.getInfo().equals(dirList[dirList.length-1])){
 					System.out.println("File added");
 					fileCheck = true;
-					blkId = node.addBlock(dataNodeList);
+					blkId = node.addBlock(dataNodeList,offset);
 				}
 			}
 			if(!fileCheck){
 				System.out.println("File added");
 				NamespaceTreeNode node = new NamespaceTreeNode(type,dirList[level+1],dataNodeList);
 				start.getChildren().add(node);
-				blkId= node.addBlock(dataNodeList);
+				blkId= node.addBlock(dataNodeList,offset);
 			}
 			
 			return blkId;
 		}
 		for(NamespaceTreeNode node: start.getChildren()){
 			if(node.getInfo().equals(dirList[level+1])){
-				return traverseFile(node,dirList,++level,type,dataNodeList);
+				return traverseFile(node,dirList,++level,type,dataNodeList,offset);
 			}
 		}
 		return blkId;
@@ -125,27 +129,32 @@ public class NameSpaceTree {
 		return null;
 	}
 
-	public String put(String destinationPath,List<String> dataNodeList) {
+	/***
+	 * Put files in the tree
+	 * 
+	 * @param destinationPath		path in the tree
+	 * @param dataNodeList			list of datanodes the block is assigned
+	 * @param offset				start offset in the file for the block.
+	 * @return						block Id
+	 */
+	public String put(String destinationPath,List<String> dataNodeList,long offset) {
 		String dirList[] = destinationPath.split("/");
-		return traverseFile(root,dirList,0,FileType.FILE,dataNodeList);
+		return traverseFile(root,dirList,0,FileType.FILE,dataNodeList,offset);
 		
 	}	
 	
-	public void getBlocks(){
-		Map<String,Block> blkMap = root.getBlockMapping();
-		Set<String> blkIds =blkMap.keySet();
-		for(Map.Entry<String, Block> e : blkMap.entrySet()){
-			
-			System.out.println("Block ID: "+e.getKey());
-			System.out.println("Block Status: "+e.getValue().getStatus());
-			
-		}
-	}
 	
+	/**
+	 * Given the block Id return the Block.
+	 * @param blockId		Block Id generated during the put process
+	 * @return				Actual block with status.
+	 */
 	public Block getBlock(String blockId) {
 		return root.getBlockMapping(blockId);
 	}
 
+	
+	
 	public List<BlocksMap> dfsTraverse(NamespaceTreeNode start,String[] dirList,int level,FileType type){
 		
 		if(level==dirList.length-1){
@@ -161,7 +170,9 @@ public class NameSpaceTree {
 	}
 	public List<BlocksMap> getBlockMap(String sourcePath) {
 		String [] path = sourcePath.split("/");
-		return dfsTraverse(root,path,0,FileType.FILE);
+		List<BlocksMap>b=dfsTraverse(root,path,0,FileType.FILE);
+		Collections.sort(b);
+		return b;
 	}
 	
 	public static void main(String[] args) {
@@ -171,16 +182,17 @@ public class NameSpaceTree {
 		dataNodeList.add("1");
 		dataNodeList.add("2");
 		dataNodeList.add("3");		
-		System.out.println(tree.put("/user/file1.txt", dataNodeList));
-		System.out.println(tree.put("/user/file1.txt", dataNodeList));
-		System.out.println(tree.put("/user/file2.txt", dataNodeList));
-		System.out.println(tree.put("/uss/file.1", dataNodeList));
+		System.out.println(tree.put("/user/file1.txt", dataNodeList,20));
+		System.out.println(tree.put("/user/file1.txt", dataNodeList,10));
+		System.out.println(tree.put("/user/file2.txt", dataNodeList,30));
+		System.out.println(tree.put("/uss/file.1", dataNodeList,10));
 		System.out.println(tree.listFiles("/user"));
-		tree.getBlocks();
-		List<BlocksMap> blkMap =tree.getBlockMap("/user/file2.txt");
+		
+		List<BlocksMap> blkMap =tree.getBlockMap("/user/file1.txt");
 		for(BlocksMap b:blkMap) {
-			System.out.println("Block Id: "+b.getBlkId());
+			System.out.println("Block offset: "+b.getBlkId().getOffset());
 			System.out.println("Block List: "+ b.getDatanodeInfo());
+			
 		}
 		
 	}
