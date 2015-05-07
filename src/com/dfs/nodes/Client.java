@@ -2,11 +2,9 @@ package com.dfs.nodes;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,16 +16,13 @@ import java.util.zip.GZIPOutputStream;
 
 import com.dfs.messages.ClientRequestMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
-import com.dfs.messages.Message;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
 import com.dfs.messages.PutNameNodeReplyMessage;
-import com.dfs.utils.Connector;
 import com.dfs.utils.Constants;
 
 public class Client {
 	private static InetAddress inetAddress;
 	public static final String CLIENT_IP;
-	public static final int CLIENT_PORT;
 	
 	static {
 		try {
@@ -36,18 +31,14 @@ public class Client {
 			e.printStackTrace();
 		}
 		CLIENT_IP = inetAddress.getHostAddress();
-		CLIENT_PORT = 8000;
 	}
 	
 	Runnable replyHandler = new Runnable() {
 		@Override
 		public void run() {
-			try(ServerSocket servSock = new ServerSocket(CLIENT_PORT)) {
-				ExecutorService executor = Executors.newCachedThreadPool();
-				while(true){
+			try(ServerSocket servSock = new ServerSocket(Constants.CLIENT_PORT_NUM)) {
 					Socket socket = servSock.accept();
-					executor.submit(new clientWorker(socket));
-				}
+					new Thread(new clientWorker(socket)).start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -88,8 +79,9 @@ public class Client {
 		}
 		
 		Client client = new Client();
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-		executor.submit(client.replyHandler);
+		//ExecutorService executor = Executors.newFixedThreadPool(1);
+		//executor.submit(client.replyHandler);
+		new Thread(client.replyHandler).start();
 
 	}
 	
@@ -128,128 +120,25 @@ class clientWorker implements Runnable{
 		System.err.println(dataNodeList);
 		String dataNode = dataNodeList.get(0);
 		System.err.println("transfer initiated to dataNode : "+dataNode);
-		try(Socket socket = new Socket(dataNode, 8000);
+		try(Socket socket = new Socket(dataNode, Constants.DATANODE_PORT);
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 			FileInputStream fis = new FileInputStream(new File(chunckPath));
 			GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream())){
+			
 			String sourceFileName = chunckPath.split("_")[1];
+			destPath = destPath.substring(0, destPath.lastIndexOf(File.separator));
 			System.err.println(sourceFileName);
-			ClientRequestMessage msg = new ClientRequestMessage(Client.CLIENT_IP, Client.CLIENT_PORT, blockId, 
+			
+			ClientRequestMessage msg = new ClientRequestMessage(Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, blockId, 
 					sourceFileName, destPath, RequestType.PUT, dataNodeList);
 			out.writeObject(msg);
+			
 			byte[] buffer = new byte[1024];
             int len;
 			while((len = fis.read(buffer)) != -1){
 				gzipOS.write(buffer, 0, len);
 			}
 			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-}
-
-class DFSCommand{
-	
-	public static int mkdir(String dir_path){
-		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
-		
-		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
-			Message makeDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
-					dir_path,RequestType.MKDIR);
-			stream.writeObject(makeDirectoryRequest);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}finally{
-			connector.closeConnection(socket);
-		}
-		
-		return 0;
-	}
-	
-	public static int ls(String dir_path){
-		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
-		
-		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
-			Message listDirectoryRequest = new Message(Client.CLIENT_IP,Client.CLIENT_PORT,
-					dir_path,RequestType.LIST);
-			stream.writeObject(listDirectoryRequest);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}finally{
-			connector.closeConnection(socket);
-		}
-		
-		return 0;
-	}
-	
-	public static int get(String sourcePath, String targetPath){
-		return 0;
-	}
-	
-	public static int put(String sourcePath, String destinationPath){
-		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
-		
-		RandomAccessFile ra_SourceFile = null;
-		long fileLength = 0;
-		File sourceFile = new File(sourcePath);
-		try {
-			ra_SourceFile = new RandomAccessFile(sourceFile, "r");
-			fileLength = ra_SourceFile.length();
-		} catch (IOException e) {
-			System.out.println("source file not found");
-			System.exit(0);
-		}
-		
-		int noOfChuncks = (int) Math.ceil((double)fileLength/Constants.CHUNK_SIZE);
-		System.err.println(noOfChuncks);
-		
-		while(noOfChuncks != 0){
-			File tempDir = new File("temp");
-			if(!tempDir.exists())
-				tempDir.mkdir();
-			String chunckPath = "temp//chunk"+noOfChuncks+"_"+sourceFile.getName();
-			readAndCreateChunk(ra_SourceFile,chunckPath);
-			requestDataNodes(socket,chunckPath,destinationPath);
-			noOfChuncks--;
-		}
-		
-		return 0;
-	}
-	
-	private static void requestDataNodes(Socket socket,String chunckPath, String destinationPath) {
-		try(ObjectOutputStream stream = new ObjectOutputStream(socket.getOutputStream())) {
-			Message dataNodeRequest = new Message(Client.CLIENT_IP, Client.CLIENT_PORT,
-					chunckPath,destinationPath,0,RequestType.PUT);
-			stream.writeObject(dataNodeRequest);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static void readAndCreateChunk(RandomAccessFile ra_SourceFile,String chunckPath) {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(new File(chunckPath));
-		} catch (IOException e) {
-			System.out.println("cannot create a chuck file");
-		}
-		
-		byte[] temp = new byte[1024];
-		try {
-			long remaining = Constants.CHUNK_SIZE;
-			int bytesRead = 0;
-			while(remaining!=0 && (bytesRead = ra_SourceFile.read(temp)) != -1){
-				fos.write(temp,0,bytesRead);
-				remaining -= 1024;
-			}
-			
-			fos.flush();
-			fos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

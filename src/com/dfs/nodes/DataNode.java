@@ -1,6 +1,7 @@
 package com.dfs.nodes;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -24,7 +25,6 @@ import com.dfs.utils.Constants;
 
 public class DataNode {
 	private static InetAddress inetAddress;
-	public static final int DATANODE_PORT;
 	public static final String DATANODE_IP;
 	
 	static {
@@ -34,7 +34,6 @@ public class DataNode {
 			e.printStackTrace();
 		}
 		DATANODE_IP = inetAddress.getHostAddress();
-		DATANODE_PORT = 8000;
 	}
 	
 	private void init(){
@@ -48,7 +47,7 @@ public class DataNode {
 	Runnable requestHandler = new Runnable() {
 		@Override
 		public void run() {
-			try(ServerSocket servSock = new ServerSocket(DATANODE_PORT)){
+			try(ServerSocket servSock = new ServerSocket(Constants.DATANODE_PORT)){
 				ExecutorService executor = Executors.newCachedThreadPool();
 				while(true){
 					Socket socket = servSock.accept();
@@ -116,19 +115,15 @@ class DataNodeWorker implements Runnable{
 			GZIPInputStream gzipIS = new GZIPInputStream(client.getInputStream())){
 			ClientRequestMessage reqMsg = (ClientRequestMessage) iStream.readObject();
 			RequestType reqType = reqMsg.getRequestType();
-			String blockPath = Constants.DATA_DIR+reqMsg.getDestinationPath()+reqMsg.getBlkId();
-			System.out.println("block path :"+blockPath+File.separator+reqMsg.getSourceFileName());
-			File file = new File(blockPath);
-			file.mkdirs();
-			FileOutputStream fos = new FileOutputStream(new File(blockPath+File.separator+reqMsg.getSourceFileName()));
+			FileOutputStream blockFile = createBlockFile(reqMsg);
 			System.out.println("Request Type :"+reqType.toString());
 			if(reqType.equals(RequestType.PUT)){
 				byte[] buffer = new byte[1024];
 	            int len;
 	            while((len = gzipIS.read(buffer)) != -1){
-	                fos.write(buffer, 0, len);
+	            	blockFile.write(buffer, 0, len);
 	            }
-	            fos.close();
+	            blockFile.close();
 				AckMessage ack = new AckMessage((String)iStream.readObject(),DataNode.DATANODE_IP);
 				sendAckMessage(ack);
 			}
@@ -141,6 +136,15 @@ class DataNodeWorker implements Runnable{
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private FileOutputStream createBlockFile(ClientRequestMessage reqMsg) throws FileNotFoundException{
+		String blockPath = Constants.DATA_DIR+reqMsg.getDestinationPath()+File.separator+reqMsg.getBlkId();
+		System.out.println("block path :"+blockPath+File.separator+reqMsg.getSourceFileName());
+		File file = new File(blockPath);
+		file.mkdirs();
+		FileOutputStream fileOutputStream = new FileOutputStream(new File(blockPath+File.separator+reqMsg.getSourceFileName()));
+		return fileOutputStream;
 	}
 	
 	private void sendAckMessage(AckMessage ack) {

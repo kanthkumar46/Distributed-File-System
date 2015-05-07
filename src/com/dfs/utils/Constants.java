@@ -16,4 +16,9 @@ public class Constants {
 	
 	public static final String DATA_DIR = System.getProperty("user.home")+File.separator+
 											"DFS"+File.separator+"DATA";
+	
+	public static final int CLIENT_PORT_NUM = 8010;
+	public static final int CLINET_ACK_PORT_NUM = 8020;
+	
+	public static final int DATANODE_PORT = 9000;
 }
