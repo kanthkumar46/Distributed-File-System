@@ -6,20 +6,17 @@ import com.dfs.nodes.RequestType;
 
 public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 
-
 	private List<String> dataNodeList;
-	private String sourcePath;
+	private String chunkPath;
 	private String blkId;
 	private static final long serialVersionUID = 1L;
-	private String destinationPath;
 
-	public PutNameNodeReplyMessage(String sourcePath, String success,
-			List<String> dataNodeList, String destinationPath) {
+	public PutNameNodeReplyMessage(String chunkPath, String blkId,
+			List<String> dataNodeList) {
 		super(0,RequestType.PUT);
-		this.dataNodeList = dataNodeList;
-		this.sourcePath = sourcePath;
-		this.blkId = success;
-		this.destinationPath= destinationPath;
+		this.setDataNodeList(dataNodeList);
+		this.setChunkPath(chunkPath);
+		this.setBlkId(blkId);
 	}
 
 	public List<String> getDataNodeList() {
@@ -30,14 +27,6 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 		this.dataNodeList = dataNodeList;
 	}
 
-	public String getSourcePath() {
-		return sourcePath;
-	}
-
-	public void setSourcePath(String sourcePath) {
-		this.sourcePath = sourcePath;
-	}
-
 	public String getBlkId() {
 		return blkId;
 	}
@@ -46,12 +35,12 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 		this.blkId = blkId;
 	}
 
-	public String getDestinationPath() {
-		return destinationPath;
+	public String getChunkPath() {
+		return chunkPath;
 	}
 
-	public void setDestinationPath(String destinationPath) {
-		this.destinationPath = destinationPath;
+	public void setChunkPath(String chunkPath) {
+		this.chunkPath = chunkPath;
 	}
 	
 }
