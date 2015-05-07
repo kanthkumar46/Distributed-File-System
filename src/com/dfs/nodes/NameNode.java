@@ -180,6 +180,7 @@ class DataNodeAckHandler implements Runnable{
 		String blkId = ackMessage.getBlockId();
 		Block blk = NameNode.tree.getBlock(blkId);
 		blk.setStatus(BlockStatus.COMPLETED);
+		System.out.println(NameNode.tree.getBlock(blkId).getStatus());
 	}
 	
 }
