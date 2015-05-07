@@ -51,7 +51,7 @@ public class DataNode {
 				ExecutorService executor = Executors.newCachedThreadPool();
 				while(true){
 					Socket socket = servSock.accept();
-					executor.submit(new DataNodeWorker(socket));
+					executor.execute(new DataNodeWorker(socket));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -120,11 +120,11 @@ class DataNodeWorker implements Runnable{
 			if(reqType.equals(RequestType.PUT)){
 				byte[] buffer = new byte[1024];
 	            int len;
-	            while((len = gzipIS.read(buffer)) != -1){
+	            while((len = gzipIS.read(buffer)) > 0){
 	            	blockFile.write(buffer, 0, len);
 	            }
 	            blockFile.close();
-				AckMessage ack = new AckMessage((String)iStream.readObject(),DataNode.DATANODE_IP);
+				AckMessage ack = new AckMessage(reqMsg.getBlkId(),DataNode.DATANODE_IP);
 				sendAckMessage(ack);
 			}
 			else if(reqType.equals(RequestType.GET)){

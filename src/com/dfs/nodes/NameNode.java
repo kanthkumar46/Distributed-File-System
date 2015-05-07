@@ -123,6 +123,7 @@ class NameNodeHandler implements Runnable {
 	 */
 	private void sendReply(NameNodeReplyMessage obj,RequestType type) {
 		try {
+			System.out.println(message.getIpAddress() +"     "+message.getPortNum());
 			Socket socket = new Socket(message.getIpAddress(),
 					message.getPortNum());
 			ObjectOutputStream oos = new ObjectOutputStream(

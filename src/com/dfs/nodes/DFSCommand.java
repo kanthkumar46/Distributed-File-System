@@ -67,6 +67,7 @@ class DFSCommand{
 		}
 		
 		int noOfChuncks = (int) Math.ceil((double)fileLength/Constants.CHUNK_SIZE);
+		Client.NO_OF_CHUNCKS = noOfChuncks;
 		System.err.println(noOfChuncks);
 		
 		while(noOfChuncks != 0){
@@ -74,25 +75,25 @@ class DFSCommand{
 			if(!tempDir.exists())
 				tempDir.mkdir();
 			String chunckPath = "temp//chunk"+noOfChuncks+"_"+sourceFile.getName();
-			readAndCreateChunk(ra_SourceFile,chunckPath);
-			requestDataNodes(socket,chunckPath,destinationPath);
+			long chunkByteOffset = readAndCreateChunk(ra_SourceFile,chunckPath);
+			requestDataNodes(socket,chunckPath,destinationPath,chunkByteOffset);
 			noOfChuncks--;
 		}
-		
+	
 		return 0;
 	}
 	
-	private static void requestDataNodes(Socket socket,String chunckPath, String destinationPath) {
+	private static void requestDataNodes(Socket socket,String chunckPath, String destinationPath, long chunkByteOffset) {
 		try(ObjectOutputStream stream = new ObjectOutputStream(socket.getOutputStream())) {
 			Message dataNodeRequest = new Message(Client.CLIENT_IP, Constants.CLIENT_PORT_NUM,
-					chunckPath,destinationPath,0,RequestType.PUT);
+					chunckPath, destinationPath, 0, RequestType.PUT, chunkByteOffset);
 			stream.writeObject(dataNodeRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void readAndCreateChunk(RandomAccessFile ra_SourceFile,String chunckPath) {
+	private static long readAndCreateChunk(RandomAccessFile ra_SourceFile,String chunckPath) {
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(new File(chunckPath));
@@ -101,19 +102,22 @@ class DFSCommand{
 		}
 		
 		byte[] temp = new byte[1024];
+		long byteOffset = 0;
 		try {
 			long remaining = Constants.CHUNK_SIZE;
 			int bytesRead = 0;
+			byteOffset = ra_SourceFile.getFilePointer();
 			while(remaining!=0 && (bytesRead = ra_SourceFile.read(temp)) != -1){
 				fos.write(temp,0,bytesRead);
-				remaining -= 1024;
+				remaining -= 1024;	
 			}
-			
 			fos.flush();
 			fos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		return byteOffset;
 	}
 	
 }

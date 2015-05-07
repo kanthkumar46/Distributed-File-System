@@ -23,6 +23,8 @@ import com.dfs.utils.Constants;
 public class Client {
 	private static InetAddress inetAddress;
 	public static final String CLIENT_IP;
+	static ExecutorService executor = Executors.newFixedThreadPool(1);
+	static int NO_OF_CHUNCKS;
 	
 	static {
 		try {
@@ -37,8 +39,10 @@ public class Client {
 		@Override
 		public void run() {
 			try(ServerSocket servSock = new ServerSocket(Constants.CLIENT_PORT_NUM)) {
+				while(!Thread.currentThread().isInterrupted()){		
 					Socket socket = servSock.accept();
 					new clientWorker(socket).handleNameNodeReply();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -47,6 +51,9 @@ public class Client {
 	
 	public static void main(String[] args) {
 		String command = args[0];
+		
+		Client client = new Client();
+		executor.execute(client.replyHandler);
 		
 		if(command.equals("-mkdir")){
 			if(args.length != 2)
@@ -78,11 +85,7 @@ public class Client {
 			System.err.println(command + ": unknown command");
 		}
 		
-		Client client = new Client();
-		//ExecutorService executor = Executors.newFixedThreadPool(1);
-		//executor.submit(client.replyHandler);
-		new Thread(client.replyHandler).start();
-
+		executor.shutdown();
 	}
 	
 }
@@ -100,14 +103,19 @@ class clientWorker{
 			if(reqType.equals(RequestType.MKDIR)){
 				MkdirNameNodeReplyMessage msg = (MkdirNameNodeReplyMessage)iStream.readObject();
 				System.out.println(msg.getErrorCode());
+				Client.executor.shutdownNow();
 			}
 			else if(reqType.equals(RequestType.LIST)){
 				ListNameNodeReplyMessage msg = (ListNameNodeReplyMessage) iStream.readObject();
 				System.out.println(msg.getFileList());
+				Client.executor.shutdownNow();
 			}
 			else if (reqType.equals(RequestType.PUT)) {
 				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream.readObject(); 
 				transferBlockToDataNode(msg.getBlkId(),msg.getSourcePath(),msg.getDestinationPath(),msg.getDataNodeList());
+				Client.NO_OF_CHUNCKS--;
+				if(Client.NO_OF_CHUNCKS == 0)
+					Client.executor.shutdownNow();
 			}
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
@@ -134,7 +142,7 @@ class clientWorker{
 			
 			byte[] buffer = new byte[1024];
             int len;
-			while((len = fis.read(buffer)) != -1){
+			while((len = fis.read(buffer)) > 0){
 				gzipOS.write(buffer, 0, len);
 			}
 			

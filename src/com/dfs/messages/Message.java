@@ -15,6 +15,7 @@ public class Message implements Serializable{
 	private String directoryPath;
 	private RequestType requestType;
 	private int replication;
+	private long blockByteOffset;
 	
 	public String getIpAddress() {
 		return ipAddress;
@@ -33,7 +34,8 @@ public class Message implements Serializable{
 	}
 
 
-	public Message(String ipAddress, int portNum, String sourcePath,String destPath,int replication, RequestType type){
+	public Message(String ipAddress, int portNum, String sourcePath,String destPath,
+			int replication, RequestType type, long byteOffset){
 		this.ipAddress = ipAddress;
 		this.portNum = portNum;
 		this.setSourcePath(sourcePath);
@@ -43,6 +45,7 @@ public class Message implements Serializable{
 		else
 			this.replication = replication;
 		this.setRequestType(type);
+		this.setBlockByteOffset(byteOffset);
 	}
 
 	public Message(String ipAddress, int portNum, String directoryPath, RequestType type){
@@ -93,6 +96,14 @@ public class Message implements Serializable{
 
 	public void setDirectoryPath(String directoryPath) {
 		this.directoryPath = directoryPath;
+	}
+
+	public long getBlockByteOffset() {
+		return blockByteOffset;
+	}
+
+	public void setBlockByteOffset(long blockByteOffset) {
+		this.blockByteOffset = blockByteOffset;
 	}
 
 }
