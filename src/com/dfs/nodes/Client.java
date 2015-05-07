@@ -38,7 +38,7 @@ public class Client {
 		public void run() {
 			try(ServerSocket servSock = new ServerSocket(Constants.CLIENT_PORT_NUM)) {
 					Socket socket = servSock.accept();
-					new Thread(new clientWorker(socket)).start();
+					new clientWorker(socket).handleNameNodeReply();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -87,14 +87,13 @@ public class Client {
 	
 }
 
-class clientWorker implements Runnable{
+class clientWorker{
 	Socket socket;
 	public clientWorker(Socket sock) {
 		this.socket = sock;
 	}
 	
-	@Override
-	public void run() {
+	public void handleNameNodeReply() {
 		try(ObjectInputStream iStream = new ObjectInputStream(socket.getInputStream())){
 			RequestType reqType = (RequestType) iStream.readObject();
 			System.out.println("Reply Type :"+reqType.toString());
