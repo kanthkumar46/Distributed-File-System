@@ -32,7 +32,7 @@ public class Client {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		CLIENT_IP = inetAddress.getHostName();
+		CLIENT_IP = inetAddress.getHostAddress();
 	}
 	
 	Runnable replyHandler = new Runnable() {
