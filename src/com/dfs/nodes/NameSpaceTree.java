@@ -215,7 +215,7 @@ public class NameSpaceTree {
 		
 		List<BlocksMap> blkMap =tree.getBlockMap("/user/file1.txt");
 		for(BlocksMap b:blkMap) {
-			System.out.println("Block offset: "+b.getBlkId().getOffset());
+			System.out.println("Block offset: "+b.getBlk().getOffset());
 			System.out.println("Block List: "+ b.getDatanodeInfo());
 			
 		}

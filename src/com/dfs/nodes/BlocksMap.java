@@ -7,19 +7,23 @@ import com.dfs.blocks.Block;
 
 public class BlocksMap implements Comparable<BlocksMap>,Serializable{
 
-	private Block blkId;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Block blk;
 	private List<String> datanodeInfo;
 	
-	public BlocksMap(Block blkId, List<String> datanodeInfo) {
-		this.blkId = blkId;
+	public BlocksMap(Block blk, List<String> datanodeInfo) {
+		this.blk = blk;
 		this.datanodeInfo = datanodeInfo;
 	}
 	
-	public Block getBlkId() {
-		return blkId;
+	public Block getBlk() {
+		return blk;
 	}
-	public void setBlkId(Block blkId) {
-		this.blkId = blkId;
+	public void setBlkId(Block blk) {
+		this.blk = blk;
 	}
 	public List<String> getDatanodeInfo() {
 		return datanodeInfo;
@@ -30,7 +34,7 @@ public class BlocksMap implements Comparable<BlocksMap>,Serializable{
 
 	@Override
 	public int compareTo(BlocksMap o) {
-		return this.blkId.compareTo(o.getBlkId());
+		return this.blk.compareTo(o.getBlk());
 		
 	}
 }

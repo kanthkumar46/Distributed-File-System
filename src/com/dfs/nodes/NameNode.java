@@ -97,8 +97,9 @@ class NameNodeHandler implements Runnable {
 	private void put() {
 		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
-		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset());
-		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
+		String blkId = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset());
+		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),blkId,dataNodeList,
+				message.getDestinationPath()),RequestType.PUT);
 		
 	}
 
@@ -189,26 +190,6 @@ class DataNodeAckHandler implements Runnable{
 	
 }
 
-class BlockReport implements Runnable {
-
-	@Override
-	public void run() {
-		
-		
-	}
-	
-}
-
-class BlockReportHandler implements Runnable {
-
-	@Override
-	public void run() {
-		
-		
-	}
-	
-}
-
 public class NameNode {
 
 	private static List<String> nodeList;
@@ -266,7 +247,7 @@ public class NameNode {
 	}
 
 	public static void main(String[] args) throws IOException {
-		NameNode node = new NameNode();
+		
 		ExecutorService service = Executors.newFixedThreadPool(5);
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());

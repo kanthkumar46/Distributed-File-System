@@ -237,7 +237,7 @@ class clientWorker {
 		ObjectOutputStream stream = new ObjectOutputStream(
 				socket.getOutputStream());
 		ClientRequestMessage clientRequestMessage = new ClientRequestMessage(
-				Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, map.getBlkId()
+				Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, map.getBlk()
 						.getBlockId(), args[1], RequestType.GET);
 		stream.writeObject(clientRequestMessage);
 		stream.close();

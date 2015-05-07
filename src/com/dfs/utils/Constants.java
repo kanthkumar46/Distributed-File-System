@@ -22,4 +22,5 @@ public class Constants {
 	
 	public static final int DATANODE_PORT = 9000;
 	public static final int CLIENT_DATANODE_PORT=9090;
+	public static final int NAMENODE_BLOCK_PORT_NUM = 5286;
 }

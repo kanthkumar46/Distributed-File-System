@@ -1,5 +1,37 @@
 package com.dfs.blocks;
 
-public class BlockReportReceiver {
+import java.io.IOException;
+import java.net.ServerSocket;
 
+import com.dfs.utils.Constants;
+
+public class BlockReportReceiver implements Runnable {
+
+	
+	public BlockReportReceiver(){
+		
+	}
+	
+	@Override
+	public void run() {
+		
+		try(ServerSocket serverSocket = new ServerSocket(Constants.NAMENODE_BLOCK_PORT_NUM)){
+			//Socket socket
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+	}
+
+}
+
+class BlockReportHandler implements Runnable {
+
+	@Override
+	public void run() {
+		
+		
+	}
+	
 }

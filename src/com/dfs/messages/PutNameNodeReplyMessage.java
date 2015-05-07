@@ -13,13 +13,14 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 	private static final long serialVersionUID = 1L;
 	private String destinationPath;
 
-	public PutNameNodeReplyMessage(String sourcePath, String success,
-			List<String> dataNodeList, String destinationPath) {
+	public PutNameNodeReplyMessage(String sourcePath,String blkId,
+			List<String> dataNodeList,String destPath) {
 		super(0,RequestType.PUT);
 		this.dataNodeList = dataNodeList;
+		this.blkId = blkId;
 		this.sourcePath = sourcePath;
-		this.blkId = success;
-		this.destinationPath= destinationPath;
+		this.destinationPath = destPath;
+		
 	}
 
 	public List<String> getDataNodeList() {
