@@ -93,8 +93,9 @@ class NameNodeHandler implements Runnable {
 	}
 
 	private void put() {
+		// TODO:
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
-		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList);
+		String success = NameNode.tree.put(message.getDestinationPath(),dataNodeList,123);
 		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),success,dataNodeList,message.getDestinationPath()),RequestType.PUT);
 		
 	}
@@ -123,6 +124,8 @@ class NameNodeHandler implements Runnable {
 	 */
 	private void sendReply(NameNodeReplyMessage obj,RequestType type) {
 		try {
+			
+			System.out.println(message.getIpAddress()+"  "+message.getPortNum());
 			Socket socket = new Socket(message.getIpAddress(),
 					message.getPortNum());
 			ObjectOutputStream oos = new ObjectOutputStream(
@@ -227,7 +230,7 @@ public class NameNode {
 		dataNodeList.add(nodeToRackMapping.get(secondReplication));
 		dataNodeList.add(nodeToRackMapping.get(thirdReplication));	*/
 		ArrayList<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add("medusa.cs.rit.edu");
+		dataNodeList.add("glados.cs.rit.edu");
 		dataNodeList.add("doors.cs.rit.edu");
 		dataNodeList.add("buddy.cs.rit.edu");
 		return dataNodeList;

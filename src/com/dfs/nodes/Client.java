@@ -30,7 +30,7 @@ public class Client {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		CLIENT_IP = inetAddress.getHostAddress();
+		CLIENT_IP = inetAddress.getHostName();
 	}
 	
 	Runnable replyHandler = new Runnable() {
@@ -100,14 +100,17 @@ class clientWorker{
 			if(reqType.equals(RequestType.MKDIR)){
 				MkdirNameNodeReplyMessage msg = (MkdirNameNodeReplyMessage)iStream.readObject();
 				System.out.println(msg.getErrorCode());
+				socket.close();
 			}
 			else if(reqType.equals(RequestType.LIST)){
 				ListNameNodeReplyMessage msg = (ListNameNodeReplyMessage) iStream.readObject();
 				System.out.println(msg.getFileList());
+				socket.close();
 			}
 			else if (reqType.equals(RequestType.PUT)) {
 				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream.readObject(); 
 				transferBlockToDataNode(msg.getBlkId(),msg.getSourcePath(),msg.getDestinationPath(),msg.getDataNodeList());
+				socket.close();
 			}
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
