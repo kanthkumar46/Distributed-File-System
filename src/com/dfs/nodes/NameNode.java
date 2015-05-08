@@ -98,8 +98,7 @@ class NameNodeHandler implements Runnable {
 		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
 		String blkId = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset());
-		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),blkId,dataNodeList,
-				message.getDestinationPath()),RequestType.PUT);
+		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),blkId,dataNodeList),RequestType.PUT);
 		
 	}
 

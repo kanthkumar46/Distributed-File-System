@@ -66,9 +66,7 @@ class DFSCommand {
 
 	public static int put(String sourcePath, String destinationPath) {
 		Connector connector = new Connector();
-
-	
-
+		
 		RandomAccessFile ra_SourceFile = null;
 		long fileLength = 0;
 		File sourceFile = new File(sourcePath);
@@ -80,8 +78,7 @@ class DFSCommand {
 			System.exit(0);
 		}
 
-		int noOfChuncks = (int) Math.ceil((double) fileLength
-				/ Constants.CHUNK_SIZE);
+		int noOfChuncks = (int) Math.ceil((double) fileLength/Constants.CHUNK_SIZE);
 		Client.NO_OF_CHUNCKS = noOfChuncks;
 		System.err.println(noOfChuncks);
 

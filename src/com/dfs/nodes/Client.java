@@ -1,6 +1,5 @@
 package com.dfs.nodes;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,7 +11,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +42,6 @@ class NameNodeReplyHandler implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 }
@@ -53,11 +50,9 @@ class DataNodeReplyHandler implements Runnable {
 
 	String [] parameters;
 	
-	
 	public DataNodeReplyHandler(String []parameters){
 		this.parameters = parameters;
 	}
-	
 	
 	@Override
 	public void run() {
@@ -66,13 +61,9 @@ class DataNodeReplyHandler implements Runnable {
 			GZIPInputStream stream = new GZIPInputStream(socket.getInputStream());
 			FileOutputStream outStream = createBlockFile();
 			
-			
-			
 		} catch (IOException e) {
-			
 			e.printStackTrace();
 		}
-		
 	}
 	
 	private FileOutputStream createBlockFile() throws FileNotFoundException{
@@ -118,7 +109,6 @@ public class Client {
 		String command = args[0];
 		executor.execute(new NameNodeReplyHandler(args));
 		
-
 		if (command.equals("-mkdir")) {
 			if (args.length != 2)
 				System.err.println("print usage");
@@ -160,31 +150,36 @@ class clientWorker {
 	}
 
 	public void handleNameNodeReply() {
-		try (ObjectInputStream iStream = new ObjectInputStream(
-				socket.getInputStream())) {
+		try (ObjectInputStream iStream = new 
+				ObjectInputStream(socket.getInputStream())) {
+			
 			RequestType reqType = (RequestType) iStream.readObject();
 			System.out.println("Reply Type :" + reqType.toString());
+			
 			if (reqType.equals(RequestType.MKDIR)) {
 				MkdirNameNodeReplyMessage msg = (MkdirNameNodeReplyMessage) iStream
 						.readObject();
 				System.out.println(msg.getErrorCode());
 				Client.executor.shutdownNow();
-			} else if (reqType.equals(RequestType.LIST)) {
+			} 
+			else if (reqType.equals(RequestType.LIST)) {
 				ListNameNodeReplyMessage msg = (ListNameNodeReplyMessage) iStream
 						.readObject();
 				System.out.println(msg.getFileList());
 				Client.executor.shutdownNow();
-			} else if (reqType.equals(RequestType.PUT)) {
+			} 
+			else if (reqType.equals(RequestType.PUT)) {
 				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream
 						.readObject();
 
-				transferBlockToDataNode(msg.getBlkId(), msg.getSourcePath(),
-						msg.getDestinationPath(), msg.getDataNodeList());
+				transferBlockToDataNode(msg.getBlkId(), msg.getChunkPath(),
+						msg.getDataNodeList());
 
 				Client.NO_OF_CHUNCKS--;
 				if (Client.NO_OF_CHUNCKS == 0)
 					Client.executor.shutdownNow();
-			} else if (reqType.equals(RequestType.GET)) {
+			} 
+			else if (reqType.equals(RequestType.GET)) {
 				GetNameNodeReplyMessage msg = (GetNameNodeReplyMessage) iStream
 						.readObject();
 				readBlockFromDataNode(msg.getBlockMap());
@@ -245,7 +240,7 @@ class clientWorker {
 
 	
 	private void transferBlockToDataNode(String blockId, String chunckPath,
-			String destPath, List<String> dataNodeList) {
+			List<String> dataNodeList) {
 		System.err.println(blockId + "  " + chunckPath);
 		System.err.println(dataNodeList);
 		String dataNode = dataNodeList.get(0);
@@ -257,9 +252,10 @@ class clientWorker {
 				GZIPOutputStream gzipOS = new GZIPOutputStream(
 						socket.getOutputStream())) {
 
-			String sourceFileName = chunckPath.split("_")[1];
-			destPath = destPath.substring(0,
-					destPath.lastIndexOf(File.separator));
+			String sourceFileName = args[1].substring(args[1].lastIndexOf(File.separator)+1,
+					args[1].length());
+			String destPath = args[2].substring(0,
+					args[2].lastIndexOf(File.separator));
 			System.err.println(sourceFileName);
 
 			ClientRequestMessage msg = new ClientRequestMessage(
