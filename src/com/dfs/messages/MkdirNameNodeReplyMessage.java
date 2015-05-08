@@ -6,8 +6,8 @@ public class MkdirNameNodeReplyMessage extends NameNodeReplyMessage{
 
 	private static final long serialVersionUID = 1L;
 
-	public MkdirNameNodeReplyMessage() {
-		super(0, RequestType.MKDIR);
+	public MkdirNameNodeReplyMessage(int status) {
+		super(status, RequestType.MKDIR);
 	}
 	
 }

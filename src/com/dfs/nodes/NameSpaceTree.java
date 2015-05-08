@@ -28,6 +28,7 @@ public class NameSpaceTree {
 	 * @return
 	 */
 	public boolean addNode(String path,int replication,FileType type){
+		System.out.println(path);
 		String [] dirList = path.split("/");
 		return traverseDir(root,dirList,0,type);
 	}
@@ -44,8 +45,18 @@ public class NameSpaceTree {
 		boolean visited = false;
 		if(level==dirList.length-2){
 			System.out.println("Dir added");
-			start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1]));
-			visited = true;
+			boolean flag = false;
+			for(NamespaceTreeNode node : start.getChildren()){
+				if(node.getInfo().equals(dirList[level+1])){
+					flag = true;
+					break;
+				}
+			}
+			if(!flag){
+				start.getChildren().add(new NamespaceTreeNode(type,dirList[level+1]));
+				visited = true;
+			
+			}
 			return visited;
 		}
 		for(NamespaceTreeNode node: start.getChildren()){
@@ -202,7 +213,8 @@ public class NameSpaceTree {
 	
 	public static void main(String[] args) {
 		NameSpaceTree tree = new NameSpaceTree();
-		tree.addNode("/user", 3, FileType.DIR);
+		System.out.println(tree.addNode("/user", 3, FileType.DIR));
+		System.out.println(tree.addNode("/user", 3, FileType.DIR));
 		List<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("1");
 		dataNodeList.add("2");

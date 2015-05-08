@@ -21,7 +21,7 @@ public class FileInfo {
 		blocks = new ArrayList<>();
 		this.setReplication(replication);
 		blocks.add(blk);
-		blkMap=new ArrayList<>();
+		//blkMap=new ArrayList<>();
 		blkMap.add(new BlocksMap(blk,dataNodeList));
 	}
 	

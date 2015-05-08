@@ -113,9 +113,12 @@ class NameNodeHandler implements Runnable {
 	 * Handling mkdir requests sent by client
 	 */
 	private void mkdir() {
+		
+		System.out.println(message.getDirectoryPath());
 		boolean out = NameNode.tree.addNode(message.getDirectoryPath(), 0,
 				FileType.DIR);
-		sendReply(new MkdirNameNodeReplyMessage(),RequestType.MKDIR);
+		
+		sendReply(new MkdirNameNodeReplyMessage(out == true?0:-1),RequestType.MKDIR);
 	}
 
 	/***
@@ -246,7 +249,7 @@ public class NameNode {
 	}
 
 	public static void main(String[] args) throws IOException {
-		
+		NameNode node = new NameNode();
 		ExecutorService service = Executors.newFixedThreadPool(5);
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());
