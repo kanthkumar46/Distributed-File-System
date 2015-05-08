@@ -2,19 +2,16 @@ package com.dfs.nodes;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 
 import com.dfs.blocks.Block;
 
 public class NameSpaceTree {
 
-	private NamespaceTreeNode root;
+	private static NamespaceTreeNode root;
 	
 	public NameSpaceTree() {
 		root = new NamespaceTreeNode(FileType.DIR,"");
@@ -214,24 +211,47 @@ public class NameSpaceTree {
 	public static void main(String[] args) {
 		NameSpaceTree tree = new NameSpaceTree();
 		System.out.println(tree.addNode("/user", 3, FileType.DIR));
-		System.out.println(tree.addNode("/user", 3, FileType.DIR));
+		System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR));
+		
 		List<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("1");
 		dataNodeList.add("2");
-		dataNodeList.add("3");		
-		System.out.println(tree.put("/user/file1.txt", dataNodeList,20));
-		System.out.println(tree.put("/user/file1.txt", dataNodeList,10));
-		System.out.println(tree.put("/user/file2.txt", dataNodeList,30));
-		System.out.println(tree.put("/uss/file.1", dataNodeList,10));
-		System.out.println(tree.listFiles("/user"));
+		dataNodeList.add("3");	
 		
-		List<BlocksMap> blkMap =tree.getBlockMap("/user/file1.txt");
+		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList,20));
+		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList,10));
+		//System.out.println(tree.put("/user/file2.txt", dataNodeList,30));
+		//System.out.println(tree.put("/uss/file.1", dataNodeList,10));
+		//System.out.println(tree.listFiles("/user"));
+		
+		List<BlocksMap> blkMap =tree.getBlockMap("/user/kanth/file1.txt");
 		for(BlocksMap b:blkMap) {
 			System.out.println("Block offset: "+b.getBlk().getOffset());
 			System.out.println("Block List: "+ b.getDatanodeInfo());
-			
+			//update(b.getBlk().getBlockId(),"1","4");
 		}
 		
+	}
+
+	public static void update(String blkId, String ipAddress,
+			String newIpAddress) {
+		
+		System.out.println(NamespaceTreeNode.blockDataMap.get(blkId));
+		if(NamespaceTreeNode.blockDataMap.containsKey(blkId)){
+			List<String> blockToDataNode = NamespaceTreeNode.blockDataMap.get(blkId);
+			Iterator<String> itr = blockToDataNode.iterator();
+			while(itr.hasNext()){
+				String element = itr.next();
+				if(element.equals(ipAddress)){
+					itr.remove();
+					blockToDataNode.add(newIpAddress);
+					NamespaceTreeNode.blockDataMap.put(blkId, blockToDataNode);
+					System.out.println(NamespaceTreeNode.blockDataMap.get(blkId));
+					break;
+				}
+			}
+			
+		}
 	}
 
 	

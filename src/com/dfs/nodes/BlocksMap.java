@@ -15,6 +15,8 @@ public class BlocksMap implements Comparable<BlocksMap>,Serializable{
 	private List<String> datanodeInfo;
 	
 	public BlocksMap(Block blk, List<String> datanodeInfo) {
+		System.out.println("Constructor: "+ blk.getBlockId());
+		System.out.println("In c:"+datanodeInfo);
 		this.blk = blk;
 		this.datanodeInfo = datanodeInfo;
 	}
@@ -34,6 +36,8 @@ public class BlocksMap implements Comparable<BlocksMap>,Serializable{
 
 	@Override
 	public int compareTo(BlocksMap o) {
+		System.out.println(o);
+		System.out.println(this.blk);
 		return this.blk.compareTo(o.getBlk());
 		
 	}

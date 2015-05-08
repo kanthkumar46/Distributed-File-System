@@ -88,8 +88,8 @@ class NameNodeHandler implements Runnable {
 	}
 
 	private void get() {
-		
-		List<BlocksMap> blkMap = NameNode.tree.getBlockMap(message.getSourcePath());
+		System.out.println(message.getDirectoryPath());
+		List<BlocksMap> blkMap = NameNode.tree.getBlockMap(message.getDirectoryPath());
 		sendReply(new GetNameNodeReplyMessage(blkMap),RequestType.GET);
 		
 	}

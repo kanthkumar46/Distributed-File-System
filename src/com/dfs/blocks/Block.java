@@ -1,6 +1,8 @@
 package com.dfs.blocks;
 
-public class Block implements Comparable<Block>{
+import java.io.Serializable;
+
+public class Block implements Comparable<Block>,Serializable{
 
 	private String blockId;
 	private BlockStatus status;

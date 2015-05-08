@@ -16,7 +16,19 @@ public class NamespaceTreeNode {
 	private List<NamespaceTreeNode> children;
 	private FileType fileType;
 	private FileInfo fileInfo;
-	private static Map<String,Block> blockMap = new HashMap<>();;
+	
+	// blockId to Block Mapping
+	private static Map<String,Block> blockMap = new HashMap<>();
+	
+	// dataNode to block mapping
+	public static Map<String,List<String>> dataNodeBlockMap = new HashMap<>();
+	
+	// block to DataNode mapping
+	public static Map<String, List<String>> blockDataMap = new HashMap<>();
+	
+	public NamespaceTreeNode(){
+		
+	}
 	
 	public NamespaceTreeNode(FileType type, String info){
 		if (type == FileType.DIR) {
@@ -53,7 +65,18 @@ public class NamespaceTreeNode {
 				BlockStatus.PROGRESS,offset);
 		fileInfo.addBlock(blk, dataNodeList);
 		blockMap.put(blockId, blk);
-		
+		for(String dataNode: dataNodeList){
+			if(dataNodeBlockMap.containsKey(dataNode)){
+				List<String> blks = dataNodeBlockMap.get(dataNode);
+				blks.add(blockId);
+				dataNodeBlockMap.put(dataNode, blks);
+			}else{
+				ArrayList<String> blks = new ArrayList<>();
+				blks.add(dataNode);
+				dataNodeBlockMap.put(dataNode, blks);
+			}
+		}
+		blockDataMap.put(blockId, dataNodeList);
 		return blockId;
 	}
 
@@ -81,17 +104,11 @@ public class NamespaceTreeNode {
 		this.fileType = fileType;
 	}
 
-	/**
-	 * @return the fileInfo
-	 */
+
 	public FileInfo getFileInfo() {
 		return fileInfo;
 	}
 
-	/**
-	 * @param fileInfo
-	 *            the fileInfo to set
-	 */
 	public void setFileInfo(FileInfo fileInfo) {
 		this.fileInfo = fileInfo;
 	}

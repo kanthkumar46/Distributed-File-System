@@ -1,35 +1,26 @@
 package com.dfs.blocks;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.List;
 
 public class BlockReport implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	private String blkId;
-	private Date generationTimeStamp;
+	private List<String> blkId;
 	private String ipAddress;
 	
-	public BlockReport(String blkId,Date gTime,String ipAddress){
+	
+	public BlockReport(List<String> blkId,String ipAddress){
 		this.setBlkId(blkId);
-		this.setGenerationTimeStamp(gTime);
 		this.setIpAddress(ipAddress);
 	}
 
-	public String getBlkId() {
+	public List<String> getBlkId() {
 		return blkId;
 	}
 
-	public void setBlkId(String blkId) {
+	public void setBlkId(List<String> blkId) {
 		this.blkId = blkId;
-	}
-
-	public Date getGenerationTimeStamp() {
-		return generationTimeStamp;
-	}
-
-	public void setGenerationTimeStamp(Date generationTimeStamp) {
-		this.generationTimeStamp = generationTimeStamp;
 	}
 
 	public String getIpAddress() {
