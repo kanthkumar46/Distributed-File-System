@@ -7,15 +7,47 @@ import com.dfs.nodes.RequestType;
 public class ReplicateMessage implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	String ipAddress;
-	int portNum;
-	String BlkId;
-	RequestType type;
+	private String ipAddress;
+	private int portNum;
+	private String BlkId;
+	private RequestType type;
 	
 	public ReplicateMessage(RequestType type, String ipAddress,int portNum,String blkId){
-		this.type = type;
+		this.setType(type);
+		this.setIpAddress(ipAddress);
+		this.setPortNum(portNum);
+		this.setBlkId(blkId);
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
+	}
+
+	public int getPortNum() {
+		return portNum;
+	}
+
+	public void setPortNum(int portNum) {
 		this.portNum = portNum;
+	}
+
+	public String getBlkId() {
+		return BlkId;
+	}
+
+	public void setBlkId(String blkId) {
 		this.BlkId = blkId;
+	}
+
+	public RequestType getType() {
+		return type;
+	}
+
+	public void setType(RequestType type) {
+		this.type = type;
 	}
 }
