@@ -138,10 +138,6 @@ class clientWorker {
 		this.args = args;
 	}
 
-	public clientWorker(Socket socket2, String[] args2, List<BlocksMap> blockMap) {
-		// TODO Auto-generated constructor stub
-	}
-
 	public void handleNameNodeReply() {
 		try (ObjectInputStream iStream = new 
 				ObjectInputStream(socket.getInputStream())) {
