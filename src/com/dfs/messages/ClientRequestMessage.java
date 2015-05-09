@@ -11,28 +11,27 @@ public class ClientRequestMessage implements Serializable{
 	private String ipAddress;
 	private int portNum;
 	private String blkId;
-	private String sourceFileName;
+	private String sourcePath;
 	private String destinationPath;
 	private RequestType requestType;
 	private List<String> dataNodeList;
 	
 	public ClientRequestMessage(String ipAddress, int portNum, String blkId,
-			String srcFileName, String destPath, RequestType req, List<String> dnList) {
+			String destPath, RequestType req, List<String> dnList) {
 		this.setIpAddress(ipAddress);
 		this.setPortNum(portNum);
 		this.setBlkId(blkId);
-		this.setSourceFileName(srcFileName);
 		this.setDestinationPath(destPath);
 		this.setRequestType(req);
 		this.setDataNodeList(dnList);
 	}
 	
 	public ClientRequestMessage(String ipAddress, int portNum, String blkId,
-			String srcFileName, RequestType req) {
+			String srcPath, RequestType req) {
 		this.setIpAddress(ipAddress);
 		this.setPortNum(portNum);
 		this.setBlkId(blkId);
-		this.setSourceFileName(srcFileName);
+		this.setSourcePath(srcPath);
 		this.setRequestType(req);
 		
 	}
@@ -85,12 +84,12 @@ public class ClientRequestMessage implements Serializable{
 		this.blkId = blkId;
 	}
 
-	public String getSourceFileName() {
-		return sourceFileName;
+	public String getSourcePath() {
+		return sourcePath;
 	}
 
-	public void setSourceFileName(String sourceFileName) {
-		this.sourceFileName = sourceFileName;
+	public void setSourcePath(String sourcePath) {
+		this.sourcePath = sourcePath;
 	}
 	
 	
