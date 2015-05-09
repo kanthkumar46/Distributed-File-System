@@ -1,8 +1,8 @@
 package com.dfs.nodes;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
@@ -26,10 +27,10 @@ import com.dfs.utils.Constants;
 
 class NameNodeReplyHandler implements Runnable {
 
-	String args[];
+	String[] args;
 
-	public NameNodeReplyHandler(String args[]) {
-		this.args = args;
+	public NameNodeReplyHandler(String parameters[]) {
+		this.args = parameters;
 	}
 
 	@Override
@@ -48,30 +49,28 @@ class NameNodeReplyHandler implements Runnable {
 
 class DataNodeReplyHandler implements Runnable {
 
-	String [] parameters;
+	String[] args;
+	List<BlocksMap> blockMap;
+	CountDownLatch start, end;
 	
-	public DataNodeReplyHandler(String []parameters){
-		this.parameters = parameters;
+	public DataNodeReplyHandler(String []parameters, List<BlocksMap> blockMap,
+			CountDownLatch start, CountDownLatch end){
+		this.args = parameters;
+		this.blockMap = blockMap;
+		this.start = start;
+		this.end = end;
 	}
 	
 	@Override
 	public void run() {
-		try (ServerSocket servSock = new ServerSocket(Constants.CLIENT_PORT_NUM)) {
+		try (ServerSocket servSock = new ServerSocket(Constants.CLIENT_DATA_RECEIVE_PORT)) {
+			start.countDown();
 			Socket socket = servSock.accept();
-			GZIPInputStream stream = new GZIPInputStream(socket.getInputStream());
-			FileOutputStream outStream = createBlockFile();
-			
+			new clientWorker(socket, args).handleDateNodeReply();
+			end.countDown();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	private FileOutputStream createBlockFile() throws FileNotFoundException{
-		String blockPath = parameters[2];
-		File file = new File(blockPath);
-		file.mkdirs();
-		FileOutputStream fileOutputStream = new FileOutputStream(new File(blockPath));
-		return fileOutputStream;
 	}
 	
 }
@@ -80,7 +79,7 @@ public class Client {
 	private static InetAddress inetAddress;
 	public static final String CLIENT_IP;
 	static ExecutorService executor = Executors.newFixedThreadPool(2);
-	static int NO_OF_CHUNCKS;
+	static int WRITE_CHUNCKS_COUNT;
 
 	static {
 		try {
@@ -91,20 +90,6 @@ public class Client {
 		CLIENT_IP = inetAddress.getHostAddress();
 	}
 
-	/***
-	 * Over head of sending path to namenode and namenode sending it back.
-	 * 
-	 */
-	/*
-	 * Runnable replyHandler = new Runnable() {
-	 * 
-	 * @Override public void run() { try(ServerSocket servSock = new
-	 * ServerSocket(Constants.CLIENT_PORT_NUM)) {
-	 * while(!Thread.currentThread().isInterrupted()){ Socket socket =
-	 * servSock.accept(); new clientWorker(socket).handleNameNodeReply(); } }
-	 * catch (IOException e) { e.printStackTrace(); } } };
-	 */
-
 	public static void main(String[] args) throws IOException {
 		String command = args[0];
 		executor.execute(new NameNodeReplyHandler(args));
@@ -113,25 +98,28 @@ public class Client {
 			if (args.length != 2)
 				System.err.println("print usage");
 			else {
-				System.out.println(args[1]);
 				DFSCommand.mkdir(args[1]);
 			}
-		} else if (command.equals("-ls")) {
+		} 
+		else if (command.equals("-ls")) {
 			if (args.length != 2)
 				System.err.println("print usage");
 			else
 				DFSCommand.ls(args[1]);
-		} else if (command.equals("-put")) {
+		} 
+		else if (command.equals("-put")) {
 			if (args.length != 3)
 				System.err.println("print usage");
 			else
 				DFSCommand.put(args[1], args[2]);
-		} else if (command.equals("-get")) {
+		} 
+		else if (command.equals("-get")) {
 			if (args.length != 3)
 				System.err.println("print usage");
 			else
 				DFSCommand.get(args[1], args[2]);
-		} else {
+		} 
+		else {
 			System.err.println(command + ": unknown command");
 		}
 
@@ -140,6 +128,7 @@ public class Client {
 
 }
 
+
 class clientWorker {
 	Socket socket;
 	String args[];
@@ -147,6 +136,10 @@ class clientWorker {
 	public clientWorker(Socket sock, String[] args) {
 		this.socket = sock;
 		this.args = args;
+	}
+
+	public clientWorker(Socket socket2, String[] args2, List<BlocksMap> blockMap) {
+		// TODO Auto-generated constructor stub
 	}
 
 	public void handleNameNodeReply() {
@@ -175,22 +168,48 @@ class clientWorker {
 				transferBlockToDataNode(msg.getBlkId(), msg.getChunkPath(),
 						msg.getDataNodeList());
 
-				Client.NO_OF_CHUNCKS--;
-				if (Client.NO_OF_CHUNCKS == 0)
+				Client.WRITE_CHUNCKS_COUNT--;
+				if (Client.WRITE_CHUNCKS_COUNT == 0)
 					Client.executor.shutdownNow();
 			} 
 			else if (reqType.equals(RequestType.GET)) {
 				GetNameNodeReplyMessage msg = (GetNameNodeReplyMessage) iStream
 						.readObject();
-				readBlockFromDataNode(msg.getBlockMap());
-				Client.executor.shutdown();
+				readBlocksFromDataNode(msg.getBlockMap());
+				Client.executor.shutdownNow();
 			}
 			socket.close();
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
+	
 
+	public void handleDateNodeReply() {
+		try(GZIPInputStream gzipIS = new GZIPInputStream(socket.getInputStream());
+			BufferedOutputStream targetFile = new 
+					BufferedOutputStream(createTargetFile())){
+			byte[] buffer = new byte[1024];
+        	int len;
+        	while((len = gzipIS.read(buffer)) > 0){
+        		targetFile.write(buffer, 0, len);
+        	}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private FileOutputStream createTargetFile() throws IOException{
+		File tagetFile = new File(args[2]);
+		if(!tagetFile.exists()) {
+			tagetFile.createNewFile();
+		}
+		FileOutputStream fileOutputStream = new FileOutputStream(tagetFile, true);
+		return fileOutputStream;
+	}
+	
+	
 	/***
 	 * To read data from the dataNode. sending the request Try connecting to the
 	 * first datanode in the list. if(unsuccessful) try connecting to 2nd
@@ -198,19 +217,32 @@ class clientWorker {
 	 * 
 	 * @param blockMap
 	 *            Block to DataNode mapping sorted according to Byte offset.
+	 * @throws IOException 
 	 */
-	private void readBlockFromDataNode(List<BlocksMap> blockMap) {
-		ExecutorService executor = Executors.newFixedThreadPool(2);
-		executor.execute(new DataNodeReplyHandler(args));
+	private void readBlocksFromDataNode(List<BlocksMap> blockMap) 
+			throws IOException {
+		//ExecutorService executor = Executors.newFixedThreadPool(2);
+		//executor.execute(new DataNodeReplyHandler(args, blockMap));
+		/*ServerSocketChannel servSockChannel = ServerSocketChannel.open();
+		servSockChannel.socket().bind(new InetSocketAddress
+				(Constants.CLIENT_DATA_RECEIVE_PORT));
+		servSockChannel.configureBlocking(false);*/
+		
 		for (BlocksMap map : blockMap) {
+			System.out.println("Byte Offset :"+map.getBlk().getOffset());
 			for (int i = 0; i < map.getDatanodeInfo().size(); i++) {
+				System.out.println("DataNode:"+map.getDatanodeInfo().get(i));
 				try (Socket sock = new Socket(map.getDatanodeInfo().get(i),
 						Constants.DATANODE_PORT)) {
-
-					sendRequestToDataNode(map, sock);
+					CountDownLatch begin = new CountDownLatch(1);
+					CountDownLatch end = new CountDownLatch(1);
+					new Thread(new DataNodeReplyHandler(args, blockMap, 
+							begin,end)).start();
+					begin.await();
+					sendRequestToDataNode(map,sock);
+					end.await();
 					break;
-
-				} catch (IOException err) {
+				} catch (IOException | InterruptedException err) {
 					continue;
 				}
 			}
@@ -246,28 +278,21 @@ class clientWorker {
 		String dataNode = dataNodeList.get(0);
 		System.err.println("transfer initiated to dataNode : " + dataNode);
 		try (Socket socket = new Socket(dataNode, Constants.DATANODE_PORT);
-				ObjectOutputStream out = new ObjectOutputStream(
-						socket.getOutputStream());
-				FileInputStream fis = new FileInputStream(new File(chunckPath));
-				GZIPOutputStream gzipOS = new GZIPOutputStream(
-						socket.getOutputStream())) {
-
-			String sourceFileName = args[1].substring(args[1].lastIndexOf(File.separator)+1,
-					args[1].length());
-			String destPath = args[2].substring(0,
-					args[2].lastIndexOf(File.separator));
-			System.err.println(sourceFileName);
-
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			FileInputStream fis = new FileInputStream(new File(chunckPath));) {
+			
 			ClientRequestMessage msg = new ClientRequestMessage(
 					Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, blockId,
-					sourceFileName, destPath, RequestType.PUT, dataNodeList);
+					args[2], RequestType.PUT, dataNodeList);
 			out.writeObject(msg);
-
+			
+			GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream());
 			byte[] buffer = new byte[1024];
 			int len;
 			while ((len = fis.read(buffer)) > 0) {
 				gzipOS.write(buffer, 0, len);
 			}
+			gzipOS.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
