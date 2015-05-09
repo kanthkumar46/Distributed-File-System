@@ -1,6 +1,13 @@
 package com.dfs.messages;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class HeartBeatMessage {
+	private String ipAddress;
+	private long diskSpace;
+
 	public HeartBeatMessage() {
 		try {
 			this.setIpAddress(InetAddress.getLocalHost().getHostAddress());
