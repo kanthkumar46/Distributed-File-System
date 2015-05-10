@@ -67,8 +67,11 @@ public class DataNodeNameNodeWorker implements Runnable {
 
 	private InputStream getBlockFile(ReplicateMessage replicateMsg) 
 			throws FileNotFoundException, IOException {
-		String blockPath = replicateMsg.getBlkId();
-		blockPath = Constants.DATA_DIR + blockPath;
+		String blockPath = replicateMsg.getBlkPath();
+		String blockDirectory = Constants.DATA_DIR + blockPath.substring(0, 
+				blockPath.lastIndexOf(File.separator)+1) + replicateMsg.getBlkId();
+		blockPath = blockDirectory+File.separator+
+				blockPath.substring(blockPath.lastIndexOf(File.separator)+1);
 		System.err.println("block path :"+blockPath);
 		
 		GZIPInputStream gzInputStream = new GZIPInputStream
