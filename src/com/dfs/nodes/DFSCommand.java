@@ -91,7 +91,8 @@ class DFSCommand {
 			String chunckPath = "temp//chunk"+noOfChuncks+"_"+sourceFile.getName();
 			long chunkByteOffset = readAndCreateChunk(ra_SourceFile,chunckPath);
 			Socket socket = connector.connectToNameNode(Constants.PORT_NUM);
-			requestDataNodes(socket,chunckPath,destinationPath,chunkByteOffset);
+			requestDataNodes(socket,chunckPath,destinationPath,
+					chunkByteOffset,fileLength);
 
 			noOfChuncks--;
 		}
@@ -100,12 +101,12 @@ class DFSCommand {
 	}
 
 	private static void requestDataNodes(Socket socket, String chunckPath,
-			String destinationPath, long chunkByteOffset) {
+			String destinationPath, long chunkByteOffset, long fileLength) {
 		try (ObjectOutputStream stream = new ObjectOutputStream(
 				socket.getOutputStream())) {
 			Message dataNodeRequest = new Message(Client.CLIENT_IP,
 					Constants.CLIENT_PORT_NUM, chunckPath, destinationPath, 0,
-					RequestType.PUT, chunkByteOffset);
+					RequestType.PUT, chunkByteOffset, fileLength);
 			stream.writeObject(dataNodeRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
