@@ -2,6 +2,7 @@ package com.dfs.nodes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,9 @@ public class NamespaceTreeNode implements Serializable{
 	private List<NamespaceTreeNode> children;
 	private FileType fileType;
 	private FileInfo fileInfo;
+	private String createdTime;
+	private String user;
+	private long size;
 	
 	// blockId to Block Mapping
 	static Map<String,Block> blockMap = new HashMap<>();
@@ -30,23 +34,28 @@ public class NamespaceTreeNode implements Serializable{
 		
 	}
 	
-	public NamespaceTreeNode(FileType type, String info){
+	public NamespaceTreeNode(FileType type, String info,String ipAddr,long size){
 		if (type == FileType.DIR) {
 			this.children = new ArrayList<>();
 			this.info = info;
 			this.setFileType(type);
 			this.setFileInfo(null);
+			this.setCreatedTime(new Date().toString());
+			this.setUser(ipAddr);
+			this.setSize(size);
 		} 
 	}
 	
 	public NamespaceTreeNode(FileType type, String info,
-			List<String> dataNodeList) {
+			List<String> dataNodeList,String ipAddr,long size) {
 		if(type == FileType.FILE) {
 			this.children = null;
 			this.info = info;
 			this.setFileType(type);
 			fileInfo = new FileInfo();
-			
+			this.setCreatedTime(new Date().toString());
+			this.setUser(ipAddr);
+			this.setSize(size);
 		}
 
 	}
@@ -112,6 +121,30 @@ public class NamespaceTreeNode implements Serializable{
 
 	public void setFileInfo(FileInfo fileInfo) {
 		this.fileInfo = fileInfo;
+	}
+
+	public String getCreatedTime() {
+		return createdTime;
+	}
+
+	public void setCreatedTime(String createdTime) {
+		this.createdTime = createdTime;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public long getSize() {
+		return size;
+	}
+
+	public void setSize(long size) {
+		this.size = size;
 	}
 
 }

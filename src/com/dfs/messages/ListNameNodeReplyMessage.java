@@ -7,18 +7,18 @@ import com.dfs.nodes.RequestType;
 public class  ListNameNodeReplyMessage extends NameNodeReplyMessage{
 
 	private static final long serialVersionUID = 1L;
-	private List<String> fileList;
+	private List<MetaData> fileList;
 	 
-	public ListNameNodeReplyMessage(List<String> fileList) {
+	public ListNameNodeReplyMessage(List<MetaData> fileList) {
 		super(0,RequestType.LIST);
 		this.setFileList(fileList);
 	}
 
-	public List<String> getFileList() {
+	public List<MetaData> getFileList() {
 		return fileList;
 	}
 
-	public void setFileList(List<String> fileList) {
+	public void setFileList(List<MetaData> fileList) {
 		this.fileList = fileList;
 	}
 }

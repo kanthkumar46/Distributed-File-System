@@ -14,7 +14,7 @@ public class PutNameNodeReplyMessage extends NameNodeReplyMessage{
 
 	public PutNameNodeReplyMessage(String chunkPath, String blkId,
 			List<String> dataNodeList) {
-		super(0,RequestType.PUT);
+		super(blkId == null ? -1:0,RequestType.PUT);
 		this.setDataNodeList(dataNodeList);
 		this.setChunkPath(chunkPath);
 		this.setBlkId(blkId);

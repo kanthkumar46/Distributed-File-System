@@ -12,18 +12,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
-import com.dfs.blocks.BlockReport;
 import com.dfs.blocks.BlockReportReceiver;
 import com.dfs.blocks.BlockStatus;
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.GetNameNodeReplyMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.Message;
+import com.dfs.messages.MetaData;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
 import com.dfs.messages.NameNodeReplyMessage;
 import com.dfs.messages.PutNameNodeReplyMessage;
@@ -101,14 +100,15 @@ class NameNodeHandler implements Runnable {
 	private void put() {
 		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());
-		String blkId = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset());
+		String blkId = NameNode.tree.put(message.getDestinationPath(),dataNodeList,message.getBlockByteOffset(),
+				message.getIpAddress(),message.getSourceFileLength());
 		sendReply(new PutNameNodeReplyMessage(message.getSourcePath(),blkId,dataNodeList),RequestType.PUT);
 		
 	}
 
 	private void list() {
 		
-		List<String> fileList = NameNode.tree.listFiles(message
+		List<MetaData> fileList = NameNode.tree.listFiles(message
 				.getDirectoryPath());
 		sendReply(new ListNameNodeReplyMessage(fileList),RequestType.LIST);
 	}
@@ -120,7 +120,7 @@ class NameNodeHandler implements Runnable {
 		
 		System.out.println(message.getDirectoryPath());
 		boolean out = NameNode.tree.addNode(message.getDirectoryPath(), 0,
-				FileType.DIR);
+				FileType.DIR,message.getIpAddress());
 		
 		sendReply(new MkdirNameNodeReplyMessage(out == true?0:-1),RequestType.MKDIR);
 	}

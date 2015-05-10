@@ -6,12 +6,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
 import com.dfs.failure.FSImage;
-import com.dfs.utils.Constants;
+import com.dfs.messages.MetaData;
 
 public class NameSpaceTree {
 
@@ -24,7 +22,7 @@ public class NameSpaceTree {
 		if (node != null)
 			root = node;
 		else {
-			root = new NamespaceTreeNode(FileType.DIR, "");
+			root = new NamespaceTreeNode(FileType.DIR, "","admin",0);
 		}
 	}
 
@@ -36,12 +34,12 @@ public class NameSpaceTree {
 	 * @param type
 	 * @return
 	 */
-	public boolean addNode(String path, int replication, FileType type) {
+	public boolean addNode(String path, int replication, FileType type,String ipAddr) {
 
 		System.out.println(path);
 		String[] dirList = path.split("/");
 		synchronized (root) {
-			return traverseDir(root, dirList, 0, type);
+			return traverseDir(root, dirList, 0, type,ipAddr);
 		}
 	}
 
@@ -57,7 +55,7 @@ public class NameSpaceTree {
 	 * @return whether the path is found or not.
 	 */
 	private boolean traverseDir(NamespaceTreeNode start, String[] dirList,
-			int level, FileType type) {
+			int level, FileType type,String ipAddr) {
 		boolean visited = false;
 		if (level == dirList.length - 2) {
 			System.out.println("Dir added");
@@ -70,7 +68,7 @@ public class NameSpaceTree {
 			}
 			if (!flag) {
 				start.getChildren().add(
-						new NamespaceTreeNode(type, dirList[level + 1]));
+						new NamespaceTreeNode(type, dirList[level + 1],ipAddr,0));
 				visited = true;
 
 			}
@@ -78,7 +76,7 @@ public class NameSpaceTree {
 		}
 		for (NamespaceTreeNode node : start.getChildren()) {
 			if (node.getInfo().equals(dirList[level + 1])) {
-				return traverseDir(node, dirList, ++level, type);
+				return traverseDir(node, dirList, ++level, type,ipAddr);
 			}
 		}
 		return visited;
@@ -102,7 +100,7 @@ public class NameSpaceTree {
 	 * @return Block Id.
 	 */
 	private String traverseFile(NamespaceTreeNode start, String[] dirList,
-			int level, FileType type, List<String> dataNodeList, long offset) {
+			int level, FileType type, List<String> dataNodeList, long offset,String ipAddr,long fileLength) {
 
 		String blkId = null;
 		if (level == dirList.length - 2) {
@@ -118,7 +116,7 @@ public class NameSpaceTree {
 			if (!fileCheck) {
 				System.out.println("File added");
 				NamespaceTreeNode node = new NamespaceTreeNode(type,
-						dirList[level + 1], dataNodeList);
+						dirList[level + 1], dataNodeList,ipAddr,fileLength);
 				start.getChildren().add(node);
 				blkId = node.addBlock(dataNodeList, offset);
 			}
@@ -128,7 +126,7 @@ public class NameSpaceTree {
 		for (NamespaceTreeNode node : start.getChildren()) {
 			if (node.getInfo().equals(dirList[level + 1])) {
 				return traverseFile(node, dirList, ++level, type, dataNodeList,
-						offset);
+						offset,ipAddr,fileLength);
 			}
 		}
 		return blkId;
@@ -140,18 +138,18 @@ public class NameSpaceTree {
 	 * @param sourcePath
 	 * @return files contained within that directory.
 	 */
-	public List<String> listFiles(String sourcePath) {
+	public List<MetaData> listFiles(String sourcePath) {
 
 		Queue<NamespaceTreeNode> queue = new LinkedList<>();
 		queue.add(root);
-		List<String> list = new ArrayList<>();
+		List<MetaData> list = new ArrayList<>();
 		String nodes[] = sourcePath.split("/");
 
 		boolean stop = false;
 
 		if (nodes.length == 0) {
 			for (NamespaceTreeNode temp : root.getChildren()) {
-				list.add(temp.getInfo());
+				list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),temp.getFileType()));
 			}
 			System.out.println("Listing files");
 			return list;
@@ -163,7 +161,7 @@ public class NameSpaceTree {
 			if (node.getInfo().equals(nodes[nodes.length - 1])) {
 				stop = true;
 				for (NamespaceTreeNode temp : node.getChildren()) {
-					list.add(temp.getInfo());
+					list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),temp.getFileType()));
 				}
 				System.out.println("Listing files ");
 				return list;
@@ -189,11 +187,11 @@ public class NameSpaceTree {
 	 * @return block Id
 	 */
 	public String put(String destinationPath, List<String> dataNodeList,
-			long offset) {
+			long offset,String ipAddr,long fileLen) {
 		synchronized (root) {
 			String dirList[] = destinationPath.split("/");
 			return traverseFile(root, dirList, 0, FileType.FILE, dataNodeList,
-					offset);
+					offset,ipAddr,fileLen);
 		}
 
 	}
@@ -291,19 +289,19 @@ public class NameSpaceTree {
 	public static void main(String[] args) {
 		// System.out.println(Constants.NAMENODE_IMAGE_DIR);
 		NameSpaceTree tree = new NameSpaceTree();
-		System.out.println(tree.addNode("/user", 3, FileType.DIR));
-		System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR));
+		//System.out.println(tree.addNode("/user", 3, FileType.DIR));
+		//System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR));
 
 		List<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("1");
 		dataNodeList.add("2");
 		dataNodeList.add("3");
 
-		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20));
+		/*System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20));
 		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 10));
 		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30));
 		System.out.println(tree.put("/uss/file.1", dataNodeList, 10));
-		System.out.println(tree.listFiles("/user"));
+		System.out.println(tree.listFiles("/user"));*/
 
 		List<BlocksMap> blkMap = tree.getBlockMap("/user/kanth/file1.txt");
 		for (BlocksMap b : blkMap) {
@@ -319,7 +317,7 @@ public class NameSpaceTree {
 	}
 
 	/***
-	 * Traverse the Namespace tree to delete and add
+	 * Traverse the Name space tree to delete and add
 	 * 
 	 * @param start
 	 * @param dirList
