@@ -1,12 +1,13 @@
 package com.dfs.nodes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.dfs.blocks.Block;
 import com.dfs.utils.Constants;
 
-public class FileInfo {
+public class FileInfo implements Serializable{
 
 	private int replication;
 	private List<Block> blocks;

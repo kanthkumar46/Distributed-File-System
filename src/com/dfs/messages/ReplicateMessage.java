@@ -11,11 +11,13 @@ public class ReplicateMessage implements Serializable{
 	int portNum;
 	String BlkId;
 	RequestType type;
+	String path;
 	
-	public ReplicateMessage(RequestType type, String ipAddress,int portNum,String blkId){
+	public ReplicateMessage(RequestType type, String ipAddress,int portNum,String blkId,String path){
 		this.type = type;
 		this.ipAddress = ipAddress;
 		this.portNum = portNum;
 		this.BlkId = blkId;
+		this.path = path;
 	}
 }

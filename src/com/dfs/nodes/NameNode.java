@@ -10,12 +10,15 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
+import com.dfs.blocks.BlockReport;
+import com.dfs.blocks.BlockReportReceiver;
 import com.dfs.blocks.BlockStatus;
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.GetNameNodeReplyMessage;
@@ -63,6 +66,7 @@ class NameNodeHandler implements Runnable {
 
 	private Message message;
 
+	
 	public NameNodeHandler(Message message) {
 		this.message = message;
 	}
@@ -203,20 +207,30 @@ public class NameNode {
 	
 	public static List<String> getNodeList(int num) {
 		
-		/*int size = nodeToRackMapping.size();
-		Random rdm = new Random();
-		int firstReplication = rdm.nextInt(size);
-		int secondReplication = rdm.nextInt(size);
-		int thirdReplication = rdm.nextInt(size);
-		ArrayList<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add(nodeToRackMapping.get(firstReplication));
-		dataNodeList.add(nodeToRackMapping.get(secondReplication));
-		dataNodeList.add(nodeToRackMapping.get(thirdReplication));	*/
+		
+		int size = nodeToRackMapping.size();
+		ArrayList<Integer> index = new ArrayList<>();
+		for(int i=0;i<size;i++){
+			index.add(i);
+		}
+		Collections.shuffle(index);
+		Integer[] list = index.subList(0, 3).toArray(new Integer[3]);
+		//ArrayList<String> dataNodeList = new ArrayList<>();
+		//dataNodeList.add(nodeList.get(list[0]));
+		//dataNodeList.add(nodeList.get(list[1]));
+		//dataNodeList.add(nodeList.get(list[2]));
 		ArrayList<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("glados.cs.rit.edu");
 		dataNodeList.add("doors.cs.rit.edu");
 		dataNodeList.add("buddy.cs.rit.edu");
 		return dataNodeList;
+	}
+	
+	public static List<String> getDiffNodeList(List<String> ipAddress){
+		List<String> node = new ArrayList<>(nodeList);
+		node.removeAll(ipAddress);
+		Collections.shuffle(node);
+		return nodeList;
 	}
 
 	public NameNode() throws IOException {
@@ -253,7 +267,7 @@ public class NameNode {
 		ExecutorService service = Executors.newFixedThreadPool(5);
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());
-		//service.execute(new BlockReport());
+		service.execute(new BlockReportReceiver());
 	}
 
 }

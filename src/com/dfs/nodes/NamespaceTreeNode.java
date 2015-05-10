@@ -1,7 +1,7 @@
 package com.dfs.nodes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.UUID;
 import com.dfs.blocks.Block;
 import com.dfs.blocks.BlockStatus;
 
-public class NamespaceTreeNode {
+public class NamespaceTreeNode implements Serializable{
 
 	private String info;
 	private List<NamespaceTreeNode> children;
@@ -18,7 +18,7 @@ public class NamespaceTreeNode {
 	private FileInfo fileInfo;
 	
 	// blockId to Block Mapping
-	private static Map<String,Block> blockMap = new HashMap<>();
+	static Map<String,Block> blockMap = new HashMap<>();
 	
 	// dataNode to block mapping
 	public static Map<String,List<String>> dataNodeBlockMap = new HashMap<>();
@@ -59,6 +59,7 @@ public class NamespaceTreeNode {
 		return blockMap;
 	}
 
+	
 	public String addBlock(List<String> dataNodeList,long offset) {
 		String blockId = UUID.randomUUID().toString();
 		Block blk = new Block(blockId,
