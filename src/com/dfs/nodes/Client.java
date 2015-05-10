@@ -229,7 +229,7 @@ class clientWorker {
 			for (int i = 0; i < map.getDatanodeInfo().size(); i++) {
 				System.out.println("DataNode:"+map.getDatanodeInfo().get(i));
 				try (Socket sock = new Socket(map.getDatanodeInfo().get(i),
-						Constants.DATANODE_PORT)) {
+						Constants.DATANODE_CLIENT_PORT)) {
 					CountDownLatch begin = new CountDownLatch(1);
 					CountDownLatch end = new CountDownLatch(1);
 					new Thread(new DataNodeReplyHandler(args, blockMap, 

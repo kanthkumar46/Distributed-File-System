@@ -138,7 +138,7 @@ class BlockReportHandler implements Runnable {
 			String path =NameSpaceTree.dfsTraverse("", NameSpaceTree.root, blkId, new StringBuilder()
 			.append("/")).toString();
 			ReplicateMessage replicateMsg = new ReplicateMessage(RequestType.REPLICA,toIpAddress
-					,Constants.DATANODE_PORT,blkId,path);
+					,Constants.DATANODE_NAMENODE_PORT,blkId,path);
 			oos.writeObject(replicateMsg);
 			oos.close();
 			socket.close();
