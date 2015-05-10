@@ -91,7 +91,7 @@ class BlockReportHandler implements Runnable {
 					List<String> newIpAddress = NameNode.getDiffNodeList(dataNodes);
 					for(String ipAddr : newIpAddress){
 						System.out.println("New Ip Address:"+ newIpAddress);
-						sendReply(dataNode,Constants.DATANODE_PORT,blkId,ipAddr);
+						sendReply(dataNode,Constants.DATANODE_NAMENODE_PORT,blkId,ipAddr);
 						NameSpaceTree.update(blkId,report.getIpAddress(),ipAddr);
 						break;
 					}
@@ -138,7 +138,7 @@ class BlockReportHandler implements Runnable {
 			String path =NameSpaceTree.dfsTraverse("", NameSpaceTree.root, blkId, new StringBuilder()
 			.append("/")).toString();
 			ReplicateMessage replicateMsg = new ReplicateMessage(RequestType.REPLICA,toIpAddress
-					,Constants.DATANODE_NAMENODE_PORT,blkId,path);
+					,Constants.DATANODE_CLIENT_PORT,blkId,path);
 			oos.writeObject(replicateMsg);
 			oos.close();
 			socket.close();

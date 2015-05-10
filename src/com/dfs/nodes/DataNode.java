@@ -1,12 +1,7 @@
 package com.dfs.nodes;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -18,12 +13,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
 import com.dfs.blocks.BlockReport;
-import com.dfs.messages.AckMessage;
-import com.dfs.messages.ClientRequestMessage;
 import com.dfs.messages.HeartBeatMessage;
 import com.dfs.utils.Connector;
 import com.dfs.utils.Constants;
