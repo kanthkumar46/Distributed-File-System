@@ -2,6 +2,7 @@ package com.dfs.nodes;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,14 +12,17 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
+import com.dfs.blocks.BlockReport;
 import com.dfs.messages.AckMessage;
-import com.dfs.messages.BlockReportMessage;
 import com.dfs.messages.ClientRequestMessage;
 import com.dfs.messages.HeartBeatMessage;
 import com.dfs.utils.Connector;
@@ -38,8 +42,8 @@ public class DataNode {
 	}
 	
 	private void init(){
-		Timer heartBeatTimer = new Timer("HeartBeat", true);
-		heartBeatTimer.schedule(new HeartBeat(), 0 , Constants.HEART_BEAT_TIME);
+		//Timer heartBeatTimer = new Timer("HeartBeat", true);
+		//heartBeatTimer.schedule(new HeartBeat(), 0 , Constants.HEART_BEAT_TIME);
 		
 		Timer blockReportTimer = new Timer("BlockReport", true);
 		blockReportTimer.schedule(new BlockReporter(), 0 , Constants.BLOCK_REPORT_TIME);
@@ -62,7 +66,8 @@ public class DataNode {
 	
 	public static void main(String[] args) {
 		DataNode dataNode = new DataNode();
-		//dataNode.init();
+		dataNode.init();
+		//BlockReporter.getBlockList("/Users/KanthKumar/Desktop/DFS/DATA");
 		
 		ExecutorService executor = Executors.newFixedThreadPool(1);
 		executor.submit(dataNode.requestHandler);
@@ -73,7 +78,7 @@ class HeartBeat extends TimerTask{
 	@Override
 	public void run() {
 		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
+		Socket socket = connector.connectToNameNode(Constants.PORT_NUM);
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			HeartBeatMessage msg = new HeartBeatMessage();
@@ -88,13 +93,18 @@ class HeartBeat extends TimerTask{
 
 
 class BlockReporter extends TimerTask{
+	
+	List<String> blockIds = new ArrayList<>();
+	
 	@Override
 	public void run() {
 		Connector connector = new Connector();
-		Socket socket= connector.connectToNameNode(Constants.PORT_NUM);
+		Socket socket= connector.connectToNameNode(Constants.NAMENODE_BLOCK_PORT_NUM);
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
-			BlockReportMessage msg = new BlockReportMessage();
+			blockIds.clear();
+			getBlockList(Constants.DATA_DIR);
+			BlockReport msg = new BlockReport(blockIds, DataNode.DATANODE_IP);
 			stream.writeObject(msg);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -102,6 +112,25 @@ class BlockReporter extends TimerTask{
 			connector.closeConnection(socket);
 		}
 	}
+
+	private void getBlockList(String directoryName) {
+		File directory = new File(directoryName);
+
+	    File[] filesList = directory.listFiles();
+	    if(filesList != null){
+		    for (File file : filesList) {
+		        if (file.isFile()) {
+		            String BlockPath = file.getParent();
+		            String blockId = BlockPath.substring
+		            		(BlockPath.lastIndexOf(File.separator)+1);
+		            blockIds.add(blockId);
+		        } 
+		        else
+		        	getBlockList(file.getAbsolutePath());
+		    }
+	    }
+	}
+	
 }
 
 class DataNodeWorker implements Runnable{
@@ -112,40 +141,116 @@ class DataNodeWorker implements Runnable{
 	
 	@Override
 	public void run() {
-		try(ObjectInputStream iStream = new ObjectInputStream(client.getInputStream());
-			GZIPInputStream gzipIS = new GZIPInputStream(client.getInputStream())){
+		try(ObjectInputStream iStream = 
+				new ObjectInputStream(client.getInputStream())){
+			
 			ClientRequestMessage reqMsg = (ClientRequestMessage) iStream.readObject();
 			RequestType reqType = reqMsg.getRequestType();
-			BufferedOutputStream blockFile = new BufferedOutputStream(createBlockFile(reqMsg));
 			System.out.println("Request Type :"+reqType.toString());
+			
 			if(reqType.equals(RequestType.PUT)){
-				byte[] buffer = new byte[1024];
-	            int len;
-	            while((len = gzipIS.read(buffer)) > 0){
-	            	blockFile.write(buffer, 0, len);
-	            }
-	            blockFile.close();
+				writeBlockReceived(reqMsg);
 				AckMessage ack = new AckMessage(reqMsg.getBlkId(),DataNode.DATANODE_IP);
 				sendAckMessage(ack);
 			}
 			else if(reqType.equals(RequestType.GET)){
-				
+				try(FileInputStream fis = getBlockFile(reqMsg);
+					Socket socket = new Socket(reqMsg.getIpAddress(),Constants.CLIENT_DATA_RECEIVE_PORT);
+					GZIPOutputStream gzipOS = new 
+							GZIPOutputStream(socket.getOutputStream());){
+					
+					byte[] buffer = new byte[1024];
+					int len;
+					while ((len = fis.read(buffer)) > 0) {
+						gzipOS.write(buffer, 0, len);
+					}
+				}
 			}
 			else if(reqType.equals(RequestType.REPLICA)){
-				
+				writeBlockReceived(reqMsg);
+				AckMessage ack = new AckMessage(reqMsg.getBlkId(),DataNode.DATANODE_IP);
+				sendAckMessage(ack);
 			}
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private FileOutputStream createBlockFile(ClientRequestMessage reqMsg) throws FileNotFoundException{
-		String blockPath = Constants.DATA_DIR+reqMsg.getDestinationPath()+File.separator+reqMsg.getBlkId();
-		System.out.println("block path :"+blockPath+File.separator+reqMsg.getSourceFileName());
-		File file = new File(blockPath);
+	
+	private void writeBlockReceived(ClientRequestMessage reqMsg) throws IOException {
+		try(GZIPInputStream gzipIS = new GZIPInputStream(client.getInputStream());
+			BufferedOutputStream blockFile = new 
+						BufferedOutputStream(createBlockFile(reqMsg));){
+				GZIPOutputStream replicateNode = replicateToOtherNode
+						(reqMsg.getDataNodeList(),reqMsg);
+				byte[] buffer = new byte[1024];
+            	int len;
+            	while((len = gzipIS.read(buffer)) > 0){
+            		blockFile.write(buffer, 0, len);
+            		if(replicateNode != null)
+            			writeToPipeline(buffer,len,replicateNode);
+            	}
+            	if(replicateNode != null)
+            		replicateNode.close();
+			}
+	}
+
+	private GZIPOutputStream replicateToOtherNode(List<String> dataNodeList, ClientRequestMessage reqMsg) {
+		dataNodeList.remove(0);
+		if(dataNodeList.size() > 0){
+			String dataNode = dataNodeList.get(0);
+			try{
+				Socket socket = new Socket(dataNode, Constants.DATANODE_PORT);
+				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+				String destPath = reqMsg.getDestinationPath();
+				ClientRequestMessage replicateMsg = new ClientRequestMessage(DataNode.DATANODE_IP,
+						Constants.DATANODE_PORT, reqMsg.getBlkId(), 
+						destPath.substring(0, destPath.lastIndexOf('.'))+DataNode.DATANODE_IP+
+						destPath.substring(destPath.lastIndexOf('.')),
+						RequestType.REPLICA, dataNodeList);
+				out.writeObject(replicateMsg);
+				
+				GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream());
+				return gzipOS;
+			}catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	private void writeToPipeline(byte[] buffer,int len,GZIPOutputStream replicateNodeStream) {
+		System.out.println(len);
+		try {
+			replicateNodeStream.write(buffer, 0, len);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private FileOutputStream createBlockFile(ClientRequestMessage reqMsg) 
+			throws FileNotFoundException{
+		String destPath = reqMsg.getDestinationPath();
+		String blockDirectory = Constants.DATA_DIR + destPath.substring(0, 
+				destPath.lastIndexOf(File.separator)+1)+reqMsg.getBlkId();
+		File file = new File(blockDirectory);
 		file.mkdirs();
-		FileOutputStream fileOutputStream = new FileOutputStream(new File(blockPath+File.separator+reqMsg.getSourceFileName()));
+		String blockFilePath = blockDirectory+File.separator+
+				destPath.substring(destPath.lastIndexOf(File.separator)+1);
+		System.err.println("block path :"+blockFilePath);
+		FileOutputStream fileOutputStream = new FileOutputStream(new File(blockFilePath));
 		return fileOutputStream;
+	}
+	
+	private FileInputStream getBlockFile(ClientRequestMessage reqMsg) 
+			throws FileNotFoundException{
+		String srcPath = reqMsg.getSourcePath();
+		String chunkFilePath = Constants.DATA_DIR + srcPath.substring(0, 
+				srcPath.lastIndexOf(File.separator)+1)+reqMsg.getBlkId()+File.separator+
+				srcPath.substring(srcPath.lastIndexOf(File.separator)+1);
+		System.err.println("block path :"+chunkFilePath);
+		FileInputStream fileInputStream = new FileInputStream(new File(chunkFilePath));
+		return fileInputStream;
 	}
 	
 	private void sendAckMessage(AckMessage ack) {
@@ -158,4 +263,5 @@ class DataNodeWorker implements Runnable{
 			e.printStackTrace();
 		}
 	}
+	
 }

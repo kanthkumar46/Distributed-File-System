@@ -21,6 +21,7 @@ class DFSCommand {
 				socket.getOutputStream())) {
 			Message makeDirectoryRequest = new Message(Client.CLIENT_IP,
 					Constants.CLIENT_PORT_NUM, dir_path, RequestType.MKDIR);
+			System.out.println(dir_path);
 			stream.writeObject(makeDirectoryRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -79,7 +80,7 @@ class DFSCommand {
 		}
 
 		int noOfChuncks = (int) Math.ceil((double) fileLength/Constants.CHUNK_SIZE);
-		Client.NO_OF_CHUNCKS = noOfChuncks;
+		Client.WRITE_CHUNCKS_COUNT = noOfChuncks; 
 		System.err.println(noOfChuncks);
 
 		while (noOfChuncks != 0) {
