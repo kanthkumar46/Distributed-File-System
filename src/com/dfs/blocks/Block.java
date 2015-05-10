@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 public class Block implements Comparable<Block>,Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String blockId;
 	private BlockStatus status;
 	private Long offset;
