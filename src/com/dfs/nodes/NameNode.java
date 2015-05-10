@@ -46,7 +46,7 @@ class NameNodeClientRequest implements Runnable {
 				ObjectInputStream stream = new ObjectInputStream(
 						socket.getInputStream());
 				Message message = (Message) stream.readObject();
-				ExecutorService service = Executors.newFixedThreadPool(5);
+				ExecutorService service = Executors.newFixedThreadPool(10);
 				service.execute(new NameNodeHandler(message));
 				
 				socket.close();
@@ -89,7 +89,11 @@ class NameNodeHandler implements Runnable {
 		}
 
 	}
-
+	
+	
+	/**
+	 * Get request sent by dataNode will be handled here.
+	 */
 	private void get() {
 		System.out.println(message.getDirectoryPath());
 		List<BlocksMap> blkMap = NameNode.tree.getBlockMap(message.getDirectoryPath());
@@ -97,6 +101,9 @@ class NameNodeHandler implements Runnable {
 		
 	}
 
+	/**
+	 * Put request sent by datande
+	 */
 	private void put() {
 		
 		List<String> dataNodeList = NameNode.getNodeList(message.getReplication());

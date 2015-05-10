@@ -149,7 +149,8 @@ public class NameSpaceTree {
 
 		if (nodes.length == 0) {
 			for (NamespaceTreeNode temp : root.getChildren()) {
-				list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),temp.getFileType()));
+				list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),
+						temp.getFileType(),temp.getSize()));
 			}
 			System.out.println("Listing files");
 			return list;
@@ -161,7 +162,8 @@ public class NameSpaceTree {
 			if (node.getInfo().equals(nodes[nodes.length - 1])) {
 				stop = true;
 				for (NamespaceTreeNode temp : node.getChildren()) {
-					list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),temp.getFileType()));
+					list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),
+							temp.getFileType(),temp.getSize()));
 				}
 				System.out.println("Listing files ");
 				return list;

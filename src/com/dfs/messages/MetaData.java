@@ -11,14 +11,14 @@ public class MetaData implements Serializable{
 	private String createdTime;
 	private String createdUser;
 	private FileType type;
+	private long size;
 	
-	public MetaData(String path, String createdTime,String createdUser,FileType type){
+	public MetaData(String path, String createdTime,String createdUser,FileType type,long size){
 		this.path = path;
 		this.createdTime = createdTime;
 		this.createdUser = createdUser;
-		this.type = type;
-		
-		
+		this.setType(type);
+		this.setSize(size);
 	}
 
 	public String getCreatedUser() {
@@ -43,6 +43,22 @@ public class MetaData implements Serializable{
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public FileType getType() {
+		return type;
+	}
+
+	public void setType(FileType type) {
+		this.type = type;
+	}
+
+	public long getSize() {
+		return size;
+	}
+
+	public void setSize(long size) {
+		this.size = size;
 	}
 
 }
