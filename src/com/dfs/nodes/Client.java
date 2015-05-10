@@ -97,9 +97,8 @@ public class Client {
 		if (command.equals("-mkdir")) {
 			if (args.length != 2)
 				System.err.println("print usage");
-			else {
+			else
 				DFSCommand.mkdir(args[1]);
-			}
 		} 
 		else if (command.equals("-ls")) {
 			if (args.length != 2)
@@ -195,7 +194,7 @@ class clientWorker {
 		}
 	}
 	
-	
+
 	private FileOutputStream createTargetFile() throws IOException{
 		File tagetFile = new File(args[2]);
 		if(!tagetFile.exists()) {
@@ -217,13 +216,6 @@ class clientWorker {
 	 */
 	private void readBlocksFromDataNode(List<BlocksMap> blockMap) 
 			throws IOException {
-		//ExecutorService executor = Executors.newFixedThreadPool(2);
-		//executor.execute(new DataNodeReplyHandler(args, blockMap));
-		/*ServerSocketChannel servSockChannel = ServerSocketChannel.open();
-		servSockChannel.socket().bind(new InetSocketAddress
-				(Constants.CLIENT_DATA_RECEIVE_PORT));
-		servSockChannel.configureBlocking(false);*/
-		
 		for (BlocksMap map : blockMap) {
 			System.out.println("Byte Offset :"+map.getBlk().getOffset());
 			for (int i = 0; i < map.getDatanodeInfo().size(); i++) {
@@ -273,12 +265,13 @@ class clientWorker {
 		System.err.println(dataNodeList);
 		String dataNode = dataNodeList.get(0);
 		System.err.println("transfer initiated to dataNode : " + dataNode);
-		try (Socket socket = new Socket(dataNode, Constants.DATANODE_PORT);
+		File localChunkfile = new File(chunckPath);
+		try (Socket socket = new Socket(dataNode, Constants.DATANODE_CLIENT_PORT);
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-			FileInputStream fis = new FileInputStream(new File(chunckPath));) {
+			FileInputStream fis = new FileInputStream(localChunkfile);) {
 			
-			ClientRequestMessage msg = new ClientRequestMessage(
-					Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, blockId,
+			ClientRequestMessage msg = new ClientRequestMessage
+					(Client.CLIENT_IP, Constants.CLIENT_PORT_NUM, blockId,
 					args[2], RequestType.PUT, dataNodeList);
 			out.writeObject(msg);
 			
@@ -289,7 +282,8 @@ class clientWorker {
 				gzipOS.write(buffer, 0, len);
 			}
 			gzipOS.close();
-
+			localChunkfile.delete();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
