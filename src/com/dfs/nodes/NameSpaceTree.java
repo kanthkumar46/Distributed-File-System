@@ -239,14 +239,14 @@ public class NameSpaceTree {
 
 	}
 
-	public static StringBuilder dfsTraverse(String nodeVal,
+	private static StringBuilder dfsTraverse(String nodeVal,
 			NamespaceTreeNode start, String blkId, StringBuilder builder) {
 
 		if (start.getFileType() == FileType.FILE) {
 
 			for (Block blk : start.getFileInfo().getBlocks()) {
 				if (blk.getBlockId().equals(blkId)) {
-					builder.append(blkId);
+					//builder.append(blkId);
 					return builder;
 				}
 			}
@@ -260,6 +260,13 @@ public class NameSpaceTree {
 		}
 		return builder;
 
+	}
+	
+	
+	public static String getReplicatePath(String blkId){
+		StringBuilder builder = dfsTraverse("",root,blkId,new StringBuilder().append("/"));
+		String str = builder.toString();
+		return str.substring(0,str.length()-1);
 	}
 
 	// public
@@ -303,8 +310,7 @@ public class NameSpaceTree {
 			System.out.println("Block offset: " + b.getBlk().getOffset());
 			System.out.println("Block List: " + b.getDatanodeInfo());
 			// update(b.getBlk().getBlockId(), "1", "4");
-			System.out.println(dfsTraverse("", root, b.getBlk().getBlockId(),
-					new StringBuilder().append("/")).toString());
+			System.out.println(getReplicatePath(b.getBlk().getBlockId()));
 		}
 
 		// ExecutorService service = Executors.newFixedThreadPool(2);
