@@ -24,6 +24,7 @@ import com.dfs.messages.ListNameNodeReplyMessage;
 import com.dfs.messages.MkdirNameNodeReplyMessage;
 import com.dfs.messages.PutNameNodeReplyMessage;
 import com.dfs.utils.Constants;
+import com.dfs.utils.Logger;
 
 class NameNodeReplyHandler implements Runnable {
 
@@ -78,7 +79,7 @@ class DataNodeReplyHandler implements Runnable {
 public class Client {
 	private static InetAddress inetAddress;
 	public static final String CLIENT_IP;
-	static ExecutorService executor = Executors.newFixedThreadPool(2);
+	public static ExecutorService executor = Executors.newFixedThreadPool(2);
 	static int WRITE_CHUNCKS_COUNT;
 
 	static {
@@ -91,35 +92,41 @@ public class Client {
 	}
 
 	public static void main(String[] args) throws IOException {
+		if(args.length == 0)
+			Logger.getLogger().printUsage(0);
+			
 		String command = args[0];
 		executor.execute(new NameNodeReplyHandler(args));
 		
 		if (command.equals("-mkdir")) {
 			if (args.length != 2)
-				System.err.println("print usage");
+				Logger.getLogger().printUsage(1);
 			else
 				DFSCommand.mkdir(args[1]);
 		} 
 		else if (command.equals("-ls")) {
 			if (args.length != 2)
-				System.err.println("print usage");
+				Logger.getLogger().printUsage(2);
 			else
 				DFSCommand.ls(args[1]);
 		} 
 		else if (command.equals("-put")) {
 			if (args.length != 3)
-				System.err.println("print usage");
+				Logger.getLogger().printUsage(3);
 			else
 				DFSCommand.put(args[1], args[2]);
 		} 
 		else if (command.equals("-get")) {
 			if (args.length != 3)
-				System.err.println("print usage");
+				Logger.getLogger().printUsage(4);
 			else
 				DFSCommand.get(args[1], args[2]);
 		} 
+		else if(command.equals("-help"))
+			Logger.getLogger().printUsage(5);
 		else {
 			System.err.println(command + ": unknown command");
+			Logger.getLogger().printUsage(5);
 		}
 
 		executor.shutdown();
@@ -142,24 +149,28 @@ class clientWorker {
 				ObjectInputStream(socket.getInputStream())) {
 			
 			RequestType reqType = (RequestType) iStream.readObject();
-			System.out.println("Reply Type :" + reqType.toString());
+			//System.out.println("Reply Type :" + reqType.toString());
 			
 			if (reqType.equals(RequestType.MKDIR)) {
 				MkdirNameNodeReplyMessage msg = (MkdirNameNodeReplyMessage) iStream
 						.readObject();
-				System.out.println(msg.getErrorCode());
+				
+				Logger.getLogger().handleMkdirErrorCode(msg.getErrorCode(),args[1]);
 				Client.executor.shutdownNow();
 			} 
 			else if (reqType.equals(RequestType.LIST)) {
 				ListNameNodeReplyMessage msg = (ListNameNodeReplyMessage) iStream
 						.readObject();
-				System.out.println(msg.getFileList());
+				
+				Logger.getLogger().printDirectoryList(msg.getFileList(),args[1]);
 				Client.executor.shutdownNow();
 			} 
 			else if (reqType.equals(RequestType.PUT)) {
 				PutNameNodeReplyMessage msg = (PutNameNodeReplyMessage) iStream
 						.readObject();
 
+				Logger.getLogger().handlePutRequestFailure(msg.getErrorCode());
+				
 				transferBlockToDataNode(msg.getBlkId(), msg.getChunkPath(),
 						msg.getDataNodeList());
 
@@ -173,6 +184,7 @@ class clientWorker {
 				readBlocksFromDataNode(msg.getBlockMap());
 				Client.executor.shutdownNow();
 			}
+			
 			socket.close();
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
