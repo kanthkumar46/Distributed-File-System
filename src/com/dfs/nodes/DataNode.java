@@ -39,7 +39,7 @@ public class DataNode {
 		blockReportTimer.schedule(new BlockReporter(), 0 , Constants.BLOCK_REPORT_TIME);
 	}
 	
-	Runnable clinetRequestHandler = new Runnable() {
+	Runnable ClientRequestHandler = new Runnable() {
 		@Override
 		public void run() {
 			try(ServerSocket servSock = new ServerSocket(Constants.DATANODE_CLIENT_PORT)){
@@ -54,7 +54,7 @@ public class DataNode {
 		}
 	};
 	
-	Runnable nameNodeRequestHandler = new Runnable() {
+	Runnable NameNodeRequestHandler = new Runnable() {
 		@Override
 		public void run() {
 			try(ServerSocket servSock = new ServerSocket(Constants.DATANODE_NAMENODE_PORT)){
@@ -74,8 +74,8 @@ public class DataNode {
 		dataNode.init();
 		
 		ExecutorService executor = Executors.newFixedThreadPool(2);
-		executor.submit(dataNode.clinetRequestHandler);
-		executor.submit(dataNode.nameNodeRequestHandler);
+		executor.submit(dataNode.ClientRequestHandler);
+		executor.submit(dataNode.NameNodeRequestHandler);
 	} 
 }
 

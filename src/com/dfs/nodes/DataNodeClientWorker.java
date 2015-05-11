@@ -119,6 +119,8 @@ public class DataNodeClientWorker implements Runnable{
 	private GZIPOutputStream createBlockFile(ClientRequestMessage reqMsg) 
 			throws IOException{
 		String destPath = reqMsg.getDestinationPath();
+		//destPath = destPath.replace("/", File.separator);
+		
 		String blockDirectory = Constants.DATA_DIR + destPath.substring(0, 
 				destPath.lastIndexOf(File.separator)+1)+reqMsg.getBlkId();
 		File file = new File(blockDirectory);
@@ -138,6 +140,8 @@ public class DataNodeClientWorker implements Runnable{
 	private GZIPInputStream getBlockFile(ClientRequestMessage reqMsg) 
 			throws IOException{
 		String srcPath = reqMsg.getSourcePath();
+		//srcPath = srcPath.replace("/", File.separator);
+		
 		String chunkFilePath = Constants.DATA_DIR + srcPath.substring(0, 
 				srcPath.lastIndexOf(File.separator)+1)+reqMsg.getBlkId()+File.separator+
 				srcPath.substring(srcPath.lastIndexOf(File.separator)+1);

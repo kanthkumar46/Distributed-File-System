@@ -21,7 +21,6 @@ class DFSCommand {
 				socket.getOutputStream())) {
 			Message makeDirectoryRequest = new Message(Client.CLIENT_IP,
 					Constants.CLIENT_PORT_NUM, dir_path, RequestType.MKDIR);
-			System.out.println(dir_path);
 			stream.writeObject(makeDirectoryRequest);
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -64,14 +64,17 @@ public class DataNodeNameNodeWorker implements Runnable {
 				gzipOS.close();
 			}
 	}
-
+	
 	private InputStream getBlockFile(ReplicateMessage replicateMsg) 
 			throws FileNotFoundException, IOException {
 		String blockPath = replicateMsg.getBlkPath();
+		//blockPath = blockPath.replace("/", File.separator);
+		
 		String blockDirectory = Constants.DATA_DIR + blockPath.substring(0, 
 				blockPath.lastIndexOf(File.separator)+1) + replicateMsg.getBlkId();
 		blockPath = blockDirectory+File.separator+
 				blockPath.substring(blockPath.lastIndexOf(File.separator)+1);
+		
 		System.err.println("block path :"+blockPath);
 		
 		GZIPInputStream gzInputStream = new GZIPInputStream
