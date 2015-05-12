@@ -90,12 +90,9 @@ public class DataNodeClientWorker implements Runnable{
 			try{
 				Socket socket = new Socket(dataNode, Constants.DATANODE_CLIENT_PORT);
 				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-				String destPath = reqMsg.getDestinationPath();
 				ClientRequestMessage replicateMsg = new ClientRequestMessage(DataNode.DATANODE_IP,
 						Constants.DATANODE_CLIENT_PORT, reqMsg.getBlkId(), 
-						destPath.substring(0, destPath.lastIndexOf('.'))+DataNode.DATANODE_IP+
-						destPath.substring(destPath.lastIndexOf('.')),
-						RequestType.PUT, dataNodeList);
+						reqMsg.getDestinationPath(), RequestType.PUT, dataNodeList);
 				out.writeObject(replicateMsg);
 				
 				GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream());
