@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 import com.dfs.blocks.Block;
 import com.dfs.blocks.BlockReportReceiver;
 import com.dfs.blocks.BlockStatus;
+import com.dfs.failure.FSImage;
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.GetNameNodeReplyMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
@@ -35,6 +36,24 @@ import com.dfs.utils.Constants;
  * @author ssuman
  *
  */
+class FSImageHandler implements Runnable {
+
+	@Override
+	public void run() {
+		FSImage image = new FSImage();
+		while(true){
+			image.saveNameSpace();
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+}
 class NameNodeClientRequest implements Runnable {
 
 	@Override
@@ -126,10 +145,10 @@ class NameNodeHandler implements Runnable {
 	private void mkdir() {
 		
 		System.out.println(message.getDirectoryPath());
-		boolean out = NameNode.tree.addNode(message.getDirectoryPath(), 0,
+		int out = NameNode.tree.addNode(message.getDirectoryPath(), 0,
 				FileType.DIR,message.getIpAddress());
 		
-		sendReply(new MkdirNameNodeReplyMessage(out == true?0:-1),RequestType.MKDIR);
+		sendReply(new MkdirNameNodeReplyMessage(out),RequestType.MKDIR);
 	}
 
 	/***
@@ -142,6 +161,7 @@ class NameNodeHandler implements Runnable {
 		try {
 			Socket socket = new Socket(message.getIpAddress(),
 					message.getPortNum());
+			
 			ObjectOutputStream oos = new ObjectOutputStream(
 					socket.getOutputStream());
 			oos.writeObject(type);
@@ -227,9 +247,10 @@ public class NameNode {
 		//dataNodeList.add(nodeList.get(list[1]));
 		//dataNodeList.add(nodeList.get(list[2]));
 		ArrayList<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add("glados.cs.rit.edu");
-		dataNodeList.add("doors.cs.rit.edu");
-		dataNodeList.add("buddy.cs.rit.edu");
+		dataNodeList.add("ec2-52-11-206-9.us-west-2.compute.amazonaws.com");
+		dataNodeList.add("ec2-52-25-9-19.us-west-2.compute.amazonaws.com");
+		dataNodeList.add("ec2-52-25-8-104.us-west-2.compute.amazonaws.com");
+		//dataNodeList.add("buddy.cs.rit.edu");
 		return dataNodeList;
 	}
 	
@@ -275,6 +296,7 @@ public class NameNode {
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());
 		service.execute(new BlockReportReceiver());
+		service.execute(new FSImageHandler());
 	}
 
 }

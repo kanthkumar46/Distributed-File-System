@@ -6,13 +6,17 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
 import com.dfs.failure.FSImage;
 import com.dfs.messages.MetaData;
+import com.dfs.utils.Constants;
 
 public class NameSpaceTree {
 
+	
 	public static NamespaceTreeNode root;
 
 	public NameSpaceTree() {
@@ -22,7 +26,7 @@ public class NameSpaceTree {
 		if (node != null)
 			root = node;
 		else {
-			root = new NamespaceTreeNode(FileType.DIR, "","admin",0);
+			root = new NamespaceTreeNode(FileType.DIR, "",Constants.MASTER_USER,Constants.MKDIR_LENGTH);
 		}
 	}
 
@@ -34,9 +38,11 @@ public class NameSpaceTree {
 	 * @param type
 	 * @return
 	 */
-	public boolean addNode(String path, int replication, FileType type,String ipAddr) {
+	public int addNode(String path, int replication, FileType type,String ipAddr) {
 
 		System.out.println(path);
+		if(path.equals("/"))
+			return -2;
 		String[] dirList = path.split("/");
 		synchronized (root) {
 			return traverseDir(root, dirList, 0, type,ipAddr);
@@ -54,33 +60,33 @@ public class NameSpaceTree {
 	 * @param type
 	 * @return whether the path is found or not.
 	 */
-	private boolean traverseDir(NamespaceTreeNode start, String[] dirList,
+	private int traverseDir(NamespaceTreeNode start, String[] dirList,
 			int level, FileType type,String ipAddr) {
-		boolean visited = false;
+		
 		if (level == dirList.length - 2) {
 			System.out.println("Dir added");
 			boolean flag = false;
 			for (NamespaceTreeNode node : start.getChildren()) {
 				if (node.getInfo().equals(dirList[level + 1])) {
 					flag = true;
-					break;
+					return -2;
 				}
 			}
 			if (!flag) {
 				start.getChildren().add(
 						new NamespaceTreeNode(type, dirList[level + 1],ipAddr,0));
-				visited = true;
-
+				return 0;
 			}
-			return visited;
+			
 		}
 		for (NamespaceTreeNode node : start.getChildren()) {
 			if (node.getInfo().equals(dirList[level + 1])) {
 				return traverseDir(node, dirList, ++level, type,ipAddr);
 			}
 		}
-		return visited;
-	}
+		
+			return -1;
+		}
 
 	/****
 	 * Traverse the n-ary file structure using DFS.
@@ -289,20 +295,20 @@ public class NameSpaceTree {
 	}
 
 	public static void main(String[] args) {
-		// System.out.println(Constants.NAMENODE_IMAGE_DIR);
+		
 		NameSpaceTree tree = new NameSpaceTree();
-		//System.out.println(tree.addNode("/user", 3, FileType.DIR));
-		//System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR));
+		//System.out.println(tree.addNode("/user", 3, FileType.DIR,"1"));
+		//System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR,"2"));
 
 		List<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("1");
 		dataNodeList.add("2");
 		dataNodeList.add("3");
 
-		/*System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20));
-		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 10));
-		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30));
-		System.out.println(tree.put("/uss/file.1", dataNodeList, 10));
+		/*System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20,"1",20));
+		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 10,"1",30));
+		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30,"2",30));
+		System.out.println(tree.put("/uss/file.1", dataNodeList, 10,"4",2));
 		System.out.println(tree.listFiles("/user"));*/
 
 		List<BlocksMap> blkMap = tree.getBlockMap("/user/kanth/file1.txt");
@@ -313,8 +319,8 @@ public class NameSpaceTree {
 			System.out.println(getReplicatePath(b.getBlk().getBlockId()));
 		}
 
-		// ExecutorService service = Executors.newFixedThreadPool(2);
-		// service.execute(new FSImage());
+		ExecutorService service = Executors.newFixedThreadPool(2);
+		service.execute(new FSImage());
 
 	}
 
