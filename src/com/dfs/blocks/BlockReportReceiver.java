@@ -90,7 +90,7 @@ class BlockReportHandler implements Runnable {
 					//TODO: 
 					List<String> newIpAddress = NameNode.getDiffNodeList(dataNodes);
 					for(String ipAddr : newIpAddress){
-						System.out.println("New Ip Address:"+ newIpAddress);
+						System.out.println(" Sending block to New Ip Address:"+ newIpAddress);
 						sendReply(dataNode,Constants.DATANODE_NAMENODE_PORT,blkId,ipAddr);
 						NameSpaceTree.update(blkId,report.getIpAddress(),ipAddr);
 						break;
@@ -106,12 +106,12 @@ class BlockReportHandler implements Runnable {
 		Map<String,String> notPresent = new HashMap<>();
 		for(String blkId : blocks){
 			notPresent.put(blkId, blkId);
-			System.out.println("Block Id from NameNode:"+ blkId);
+			
 		}
 		
 		for(String blkId: report.getBlkId()){
 			notPresent.remove(blkId);
-			System.out.println("Block Id from DataNode:"+ blkId);
+			
 		}
 		
 		ArrayList<String> finalList = new ArrayList<>();
