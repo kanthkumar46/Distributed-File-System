@@ -1,6 +1,7 @@
 package com.dfs.nodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ public class NameSpaceTree {
 	 */
 	public int addNode(String path, int replication, FileType type,String ipAddr) {
 
-		System.out.println(path);
+		
 		if(path.equals("/"))
 			return -2;
 		String[] dirList = path.split("/");
@@ -64,17 +65,19 @@ public class NameSpaceTree {
 			int level, FileType type,String ipAddr) {
 		
 		if (level == dirList.length - 2) {
-			System.out.println("Dir added");
+			
 			boolean flag = false;
 			for (NamespaceTreeNode node : start.getChildren()) {
 				if (node.getInfo().equals(dirList[level + 1])) {
 					flag = true;
+					System.out.println("Already Exists" + Arrays.toString(dirList));
 					return -2;
 				}
 			}
 			if (!flag) {
 				start.getChildren().add(
 						new NamespaceTreeNode(type, dirList[level + 1],ipAddr,0));
+				System.out.println("Dir added" + Arrays.toString(dirList));
 				return 0;
 			}
 			
@@ -84,7 +87,7 @@ public class NameSpaceTree {
 				return traverseDir(node, dirList, ++level, type,ipAddr);
 			}
 		}
-		
+			System.out.println("Cannot create dir" + Arrays.toString(dirList));
 			return -1;
 		}
 

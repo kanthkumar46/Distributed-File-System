@@ -144,7 +144,7 @@ class NameNodeHandler implements Runnable {
 	 */
 	private void mkdir() {
 		
-		System.out.println(message.getDirectoryPath());
+		//System.out.println(message.getDirectoryPath());
 		int out = NameNode.tree.addNode(message.getDirectoryPath(), 0,
 				FileType.DIR,message.getIpAddress());
 		
@@ -242,14 +242,14 @@ public class NameNode {
 		}
 		Collections.shuffle(index);
 		Integer[] list = index.subList(0, 3).toArray(new Integer[3]);
-		//ArrayList<String> dataNodeList = new ArrayList<>();
-		//dataNodeList.add(nodeList.get(list[0]));
-		//dataNodeList.add(nodeList.get(list[1]));
-		//dataNodeList.add(nodeList.get(list[2]));
 		ArrayList<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add("ec2-52-11-206-9.us-west-2.compute.amazonaws.com");
-		dataNodeList.add("ec2-52-25-9-19.us-west-2.compute.amazonaws.com");
-		dataNodeList.add("ec2-52-25-8-104.us-west-2.compute.amazonaws.com");
+		dataNodeList.add(nodeList.get(list[0]));
+		dataNodeList.add(nodeList.get(list[1]));
+		dataNodeList.add(nodeList.get(list[2]));
+		//ArrayList<String> dataNodeList = new ArrayList<>();
+		//dataNodeList.add("ec2-52-24-230-154.us-west-2.compute.amazonaws.com");
+		//dataNodeList.add("ec2-52-25-8-104.us-west-2.compute.amazonaws.com");
+		//dataNodeList.add("ec2-52-25-9-19.us-west-2.compute.amazonaws.com");
 		//dataNodeList.add("buddy.cs.rit.edu");
 		return dataNodeList;
 	}
