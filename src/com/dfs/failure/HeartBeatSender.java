@@ -13,7 +13,7 @@ public class HeartBeatSender extends TimerTask{
 	@Override
 	public void run() {
 		Connector connector = new Connector();
-		Socket socket = connector.connectToNameNode(Constants.PORT_NUM);
+		Socket socket = connector.connectToNameNode(Constants.NAMENODE_HEARTBEAT_PORT_NUM);
 		
 		try(ObjectOutputStream stream =  new ObjectOutputStream(socket.getOutputStream())){
 			HeartBeatMessage msg = new HeartBeatMessage();

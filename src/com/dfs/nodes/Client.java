@@ -178,8 +178,10 @@ class clientWorker {
 						msg.getDataNodeList());
 
 				Client.WRITE_CHUNCKS_COUNT--;
-				if (Client.WRITE_CHUNCKS_COUNT == 0)
+				if (Client.WRITE_CHUNCKS_COUNT == 0){
 					Client.executor.shutdownNow();
+					System.err.println("Done.");
+				}
 			} 
 			else if (reqType.equals(RequestType.GET)) {
 				GetNameNodeReplyMessage msg = (GetNameNodeReplyMessage) iStream
@@ -189,6 +191,7 @@ class clientWorker {
 				
 				readBlocksFromDataNode(msg.getBlockMap());
 				Client.executor.shutdownNow();
+				System.err.println("Done.");
 			}
 			
 			socket.close();
@@ -235,9 +238,9 @@ class clientWorker {
 	private void readBlocksFromDataNode(List<BlocksMap> blockMap) 
 			throws IOException {
 		for (BlocksMap map : blockMap) {
-			System.out.println("Byte Offset :"+map.getBlk().getOffset());
+			//System.out.println("Byte Offset :"+map.getBlk().getOffset());
 			for (int i = 0; i < map.getDatanodeInfo().size(); i++) {
-				System.out.println("DataNode:"+map.getDatanodeInfo().get(i));
+				//System.out.println("DataNode:"+map.getDatanodeInfo().get(i));
 				try (Socket sock = new Socket(map.getDatanodeInfo().get(i),
 						Constants.DATANODE_CLIENT_PORT)) {
 					CountDownLatch begin = new CountDownLatch(1);
@@ -247,6 +250,7 @@ class clientWorker {
 					begin.await();
 					sendRequestToDataNode(map,sock);
 					end.await();
+					System.err.println("==========");
 					break;
 				} catch (IOException | InterruptedException err) {
 					continue;
@@ -279,10 +283,10 @@ class clientWorker {
 	
 	private void transferBlockToDataNode(String blockId, String chunckPath,
 			List<String> dataNodeList) {
-		System.err.println(blockId + "  " + chunckPath);
-		System.err.println(dataNodeList);
+		//System.err.println(blockId + "  " + chunckPath);
+		//System.err.println(dataNodeList);
 		String dataNode = dataNodeList.get(0);
-		System.err.println("transfer initiated to dataNode : " + dataNode);
+		//System.err.println("transfer initiated to dataNode : " + dataNode);
 		File localChunkfile = new File(chunckPath);
 		try (Socket socket = new Socket(dataNode, Constants.DATANODE_CLIENT_PORT);
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -301,6 +305,8 @@ class clientWorker {
 			}
 			gzipOS.close();
 			localChunkfile.delete();
+			
+			System.err.print("==========");
 			
 		} catch (IOException e) {
 			e.printStackTrace();

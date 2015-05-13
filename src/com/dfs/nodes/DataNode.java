@@ -27,8 +27,8 @@ public class DataNode {
 	}
 	
 	private void init(){
-		//Timer heartBeatTimer = new Timer("HeartBeat", true);
-		//heartBeatTimer.schedule(new HeartBeatSender(), 0 , Constants.HEART_BEAT_TIME);
+		Timer heartBeatTimer = new Timer("HeartBeat", true);
+		heartBeatTimer.schedule(new HeartBeatSender(), 0 , Constants.HEART_BEAT_TIME);
 		
 		Timer blockReportTimer = new Timer("BlockReport", true);
 		blockReportTimer.schedule(new BlockReportSender(), 0 , Constants.BLOCK_REPORT_TIME);

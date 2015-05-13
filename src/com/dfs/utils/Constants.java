@@ -29,6 +29,7 @@ public class Constants {
 	public static final int DATANODE_CLIENT_PORT = 9000;
 	public static final int DATANODE_NAMENODE_PORT = 9090;
 	public static final int NAMENODE_BLOCK_PORT_NUM = 5286;
+	public static final int NAMENODE_HEARTBEAT_PORT_NUM = 5287;
 	public static final String NAMENODE_IMAGE_DIR= Paths.get(System.getProperty("user.home"), "DFS","namenode").toString();
 	public static final String NAMENODE_HIST_DIR = Paths.get(System.getProperty("user.home"),"DFS","tmp").toString();
 }
