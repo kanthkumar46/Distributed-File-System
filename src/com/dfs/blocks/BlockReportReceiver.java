@@ -22,7 +22,7 @@ import com.dfs.utils.Constants;
 
 public class BlockReportReceiver implements Runnable {
 	
-	
+
 	@Override
 	public void run() {
 		
@@ -47,7 +47,7 @@ public class BlockReportReceiver implements Runnable {
 		blkIds.add("A");
 		blkIds.add("B");
 		blkIds.add("C");
-		blkIds.add("D");
+		//blkIds.add("D");
 		
 		BlockReport report = new BlockReport(blkIds,"123");
 		
@@ -76,19 +76,24 @@ class BlockReportHandler implements Runnable {
 
 	@Override
 	public void run() {
+		
 		List<String> blocks =NamespaceTreeNode.dataNodeBlockMap.get(report.getIpAddress());
 		if(blocks == null)
 			blocks = new ArrayList<>();
 		
+		System.out.println("IP Address: "+report.getIpAddress()+ "NameNode blocks: "+ blocks);
 		ArrayList<String> finalList = findMissingBlocks(blocks);
 		
 		for(String blkId : finalList){
 			List<String> dataNodes = new ArrayList<>(NamespaceTreeNode.blockDataMap.get(blkId));
+			System.out.println("List DataNode: " +  dataNodes);
 			dataNodes.remove(report.getIpAddress());
 			for(String dataNode : dataNodes){
 				try{
 					//TODO: 
 					List<String> newIpAddress = NameNode.getDiffNodeList(dataNodes);
+					System.out.println("New Ip Address" + newIpAddress);
+					System.out.println("");
 					for(String ipAddr : newIpAddress){
 						System.out.println(" Sending block to New Ip Address:"+ newIpAddress);
 						sendReply(dataNode,Constants.DATANODE_NAMENODE_PORT,blkId,ipAddr);
@@ -109,7 +114,10 @@ class BlockReportHandler implements Runnable {
 			
 		}
 		
+		System.out.println("IP Address: "+report.getIpAddress()+" Block ID: "+report.getBlkId());
+		
 		for(String blkId: report.getBlkId()){
+			
 			notPresent.remove(blkId);
 			
 		}

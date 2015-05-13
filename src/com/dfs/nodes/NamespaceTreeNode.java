@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.swing.RowFilter.Entry;
+
 import com.dfs.blocks.Block;
 import com.dfs.blocks.BlockStatus;
 
@@ -75,16 +77,32 @@ public class NamespaceTreeNode implements Serializable{
 				BlockStatus.PROGRESS,offset);
 		fileInfo.addBlock(blk, dataNodeList);
 		blockMap.put(blockId, blk);
+		
+		System.out.println("Before ");
+		for(Map.Entry<String, List<String>> m : dataNodeBlockMap.entrySet()){
+			System.out.println("Get KeY" + m.getKey() + " GetValue " + m.getValue());
+		}
+		
 		for(String dataNode: dataNodeList){
 			if(dataNodeBlockMap.containsKey(dataNode)){
+				
 				List<String> blks = dataNodeBlockMap.get(dataNode);
+				System.out.println("DataNode Contains " + dataNode +" "+ blks);
 				blks.add(blockId);
 				dataNodeBlockMap.put(dataNode, blks);
+				//System.out.println("DataNode Contains " + dataNode +" "+ blks);
 			}else{
 				ArrayList<String> blks = new ArrayList<>();
-				blks.add(dataNode);
+				blks.add(blockId);
+				//System.out.println("DataNode" + dataNode +" "+ blks);
 				dataNodeBlockMap.put(dataNode, blks);
 			}
+		}
+		
+		System.out.println("After ");
+		
+		for(Map.Entry<String, List<String>> m : dataNodeBlockMap.entrySet()){
+			System.out.println("Get KeY" + m.getKey() + " GetValue " + m.getValue());
 		}
 		blockDataMap.put(blockId, dataNodeList);
 		return blockId;

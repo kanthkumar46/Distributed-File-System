@@ -235,17 +235,17 @@ public class NameNode {
 	public static List<String> getNodeList(int num) {
 		
 		
-		int size = nodeToRackMapping.size();
+		int size = nodeList.size();
 		ArrayList<Integer> index = new ArrayList<>();
 		for(int i=0;i<size;i++){
 			index.add(i);
 		}
 		Collections.shuffle(index);
-		Integer[] list = index.subList(0, 3).toArray(new Integer[3]);
+		//Integer[] list = index.subList(0, 3).toArray(new Integer[3]);
 		ArrayList<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add(nodeList.get(list[0]));
-		dataNodeList.add(nodeList.get(list[1]));
-		dataNodeList.add(nodeList.get(list[2]));
+		dataNodeList.add(nodeList.get(index.get(0)));
+		dataNodeList.add(nodeList.get(index.get(1)));
+		dataNodeList.add(nodeList.get(index.get(2)));
 		//ArrayList<String> dataNodeList = new ArrayList<>();
 		//dataNodeList.add("ec2-52-24-230-154.us-west-2.compute.amazonaws.com");
 		//dataNodeList.add("ec2-52-25-8-104.us-west-2.compute.amazonaws.com");
@@ -266,7 +266,7 @@ public class NameNode {
 		nodeToRackMapping = new ArrayList<>();
 		readDataNodeList();
 		readRackAwarness();
-		
+		//getNodeList(3);
 	}
 
 	private void readRackAwarness() throws FileNotFoundException, IOException {

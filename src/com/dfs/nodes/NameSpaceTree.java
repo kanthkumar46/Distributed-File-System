@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
+import com.dfs.blocks.BlockReport;
+import com.dfs.blocks.BlockReportReceiver;
 import com.dfs.failure.FSImage;
 import com.dfs.messages.MetaData;
 import com.dfs.utils.Constants;
@@ -300,27 +302,34 @@ public class NameSpaceTree {
 	public static void main(String[] args) {
 		
 		NameSpaceTree tree = new NameSpaceTree();
-		//System.out.println(tree.addNode("/user", 3, FileType.DIR,"1"));
-		//System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR,"2"));
+		System.out.println(tree.addNode("/user", 3, FileType.DIR,"1"));
+		System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR,"2"));
 
 		List<String> dataNodeList = new ArrayList<>();
-		dataNodeList.add("1");
-		dataNodeList.add("2");
-		dataNodeList.add("3");
-
+		dataNodeList.add("1a");
+		dataNodeList.add("2a");
+		dataNodeList.add("3a");
+		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20,"1",20));
+		System.out.println(tree.put("/user/kanth/file2.txt", dataNodeList, 20,"2",20));
+		
+		
 		/*System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20,"1",20));
 		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 10,"1",30));
-		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30,"2",30));
-		System.out.println(tree.put("/uss/file.1", dataNodeList, 10,"4",2));
-		System.out.println(tree.listFiles("/user"));*/
-
+		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30,"2",30));*/
+		//System.out.println(tree.put("/uss/file.1", dataNodeList, 10,"4",2));
+		//System.out.println(tree.listFiles("/user"));
+		List<String> blks = new ArrayList<>();
 		List<BlocksMap> blkMap = tree.getBlockMap("/user/kanth/file1.txt");
 		for (BlocksMap b : blkMap) {
 			System.out.println("Block offset: " + b.getBlk().getOffset());
 			System.out.println("Block List: " + b.getDatanodeInfo());
 			// update(b.getBlk().getBlockId(), "1", "4");
 			System.out.println(getReplicatePath(b.getBlk().getBlockId()));
+			blks.add(b.getBlk().getBlockId());
 		}
+		
+		//BlockReport report  = new BlockReport(blks,dataNodeList.get(0));
+		//BlockReportReceiver receiver = new BlockReportReceiver(report);
 
 		ExecutorService service = Executors.newFixedThreadPool(2);
 		service.execute(new FSImage());
@@ -387,6 +396,7 @@ public class NameSpaceTree {
 			List<String> blkIds = NamespaceTreeNode.dataNodeBlockMap
 					.get(ipAddress);
 			boolean deleted = blkIds.remove(blkId);
+			NamespaceTreeNode.dataNodeBlockMap.put(ipAddress, blkIds);
 			if (deleted) {
 				List<String> newIpBlks = NamespaceTreeNode.dataNodeBlockMap
 						.get(newIpAddress);
@@ -394,7 +404,7 @@ public class NameSpaceTree {
 					newIpBlks = new ArrayList<>();
 				newIpBlks.add(blkId);
 				System.out.println("dataNodeBlockMap NodeList: " + newIpBlks);
-				NamespaceTreeNode.dataNodeBlockMap.put(blkId, newIpBlks);
+				NamespaceTreeNode.dataNodeBlockMap.put(newIpAddress, newIpBlks);
 			}
 		}
 	}
