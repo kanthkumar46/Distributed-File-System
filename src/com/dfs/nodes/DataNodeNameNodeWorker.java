@@ -52,7 +52,7 @@ public class DataNodeNameNodeWorker implements Runnable {
 				dataNodeList.add(replicateMsg.getIpAddress());
 				ClientRequestMessage msg = new ClientRequestMessage (DataNode.DATANODE_IP, 
 						Constants.DATANODE_CLIENT_PORT, replicateMsg.getBlkId(),
-						replicateMsg.getIpAddress(), RequestType.PUT,dataNodeList);
+						replicateMsg.getBlkPath(), RequestType.PUT,dataNodeList);
 				out.writeObject(msg);
 				
 				GZIPOutputStream gzipOS = new GZIPOutputStream(socket.getOutputStream());	

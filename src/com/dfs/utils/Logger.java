@@ -28,8 +28,10 @@ public class Logger {
 			StringBuilder str = new StringBuilder(dir_path).append(File.separator);
 			dir_path = str.toString();
 		}
-			
-		if(!list.isEmpty()){
+		
+		if(list == null)
+			System.err.println("Directory doesn't exists "+dir_path);
+		else if(!list.isEmpty()){
 			for(MetaData fileinfo : list){
 				System.out.format("%-10s%-20s%-20s%-30s%-30s", fileinfo.getType(),fileinfo.getCreatedUser(),
 						fileinfo.getSize(), fileinfo.getCreatedTime(), dir_path+fileinfo.getPath());
