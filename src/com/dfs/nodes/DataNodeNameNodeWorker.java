@@ -33,13 +33,20 @@ public class DataNodeNameNodeWorker implements Runnable {
 			ReplicateMessage replicateMsg = (ReplicateMessage) iStream.readObject();
 			RequestType reqType = replicateMsg.getType();
 			System.out.println("Request Type :"+reqType.toString());
-
-			replicateBlockToOtherNode(replicateMsg);
+			
+			if(reqType.equals(RequestType.REPLICA))
+				replicateBlockToOtherNode(replicateMsg);
+			//else if(reqType.equals(RequestType.GC))
+				//regainBlockSpace(Constants.DATA_DIR);
 
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
+
+	/*private void regainBlockSpace(String data_dir) {
+		File file = new File
+	}*/
 
 	private void replicateBlockToOtherNode(ReplicateMessage replicateMsg) 
 			throws UnknownHostException, IOException {
@@ -82,4 +89,6 @@ public class DataNodeNameNodeWorker implements Runnable {
 		return gzInputStream;
 	}
 
+	
+	
 }

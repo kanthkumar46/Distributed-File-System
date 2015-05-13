@@ -92,8 +92,10 @@ public class Client {
 	}
 
 	public static void main(String[] args) throws IOException {
-		if(args.length == 0)
+		if(args.length == 0){
+			System.err.println("No arguments passed");
 			Logger.getLogger().printUsage(0);
+		}
 			
 		String command = args[0];
 		executor.execute(new NameNodeReplyHandler(args));
@@ -122,11 +124,12 @@ public class Client {
 			else
 				DFSCommand.get(args[1], args[2]);
 		} 
-		else if(command.equals("-help"))
+		else if(command.equals("-help")){
 			Logger.getLogger().printUsage(5);
+		}
 		else {
 			System.err.println(command + ": unknown command");
-			Logger.getLogger().printUsage(5);
+			System.err.println("try: RIT-DFS -help");
 		}
 
 		executor.shutdown();
@@ -181,6 +184,9 @@ class clientWorker {
 			else if (reqType.equals(RequestType.GET)) {
 				GetNameNodeReplyMessage msg = (GetNameNodeReplyMessage) iStream
 						.readObject();
+				
+				Logger.getLogger().handleGetRequestFailure(msg.getErrorCode());
+				
 				readBlocksFromDataNode(msg.getBlockMap());
 				Client.executor.shutdownNow();
 			}

@@ -41,14 +41,15 @@ public class Logger {
 	}
 
 	public void handlePutRequestFailure(int errorCode) {
-		if(errorCode == -1)
-			System.err.println();
+		if(errorCode == -1){
+			System.err.println("Cannot Insert File");
+			System.exit(0);
+		}
 	}
 
 	public void printUsage(int usageType) {
 		switch (usageType) {
-			case 0:System.err.println("No arguments passed");
-			System.err.println("try: RIT-DFS -help");
+			case 0:System.err.println("try: RIT-DFS -help");
 			break;
 			case 1:System.err.println("RIT-DFS -mkdir {directory name}");
 			break;
@@ -65,6 +66,13 @@ public class Logger {
 			break;
 		}
 		System.exit(0);
+	}
+
+	public void handleGetRequestFailure(int errorCode) {
+		if(errorCode == -1){
+			System.err.println("Cannot Get Specified File");
+			System.exit(0);
+		}
 	}
 	
 }
