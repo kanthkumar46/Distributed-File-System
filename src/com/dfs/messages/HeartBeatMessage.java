@@ -1,10 +1,11 @@
 package com.dfs.messages;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class HeartBeatMessage {
+public class HeartBeatMessage implements Serializable{
 	private String ipAddress;
 	private long diskSpace;
 

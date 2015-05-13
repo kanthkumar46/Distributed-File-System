@@ -21,7 +21,7 @@ public class HeartBeatReceiver implements Runnable{
 	@Override
 	public void run() {
 		try (ServerSocket serverSocket = new ServerSocket(
-				Constants.HEART_BEAT_PORT)) {
+				Constants.NAMENODE_HEARTBEAT_PORT_NUM)) {
 			while (true) {
 				Socket socket = serverSocket.accept();
 				ObjectInputStream stream = new ObjectInputStream(
@@ -70,7 +70,7 @@ class HeartBeatHandler implements Runnable {
 	@Override
 	public void run() {
 		
-		
+		updateList(message);
 	}
 
 	public HeartBeatMessage getMessage() {

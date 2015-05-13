@@ -91,6 +91,7 @@ class BlockReportHandler implements Runnable {
 			
 			if (blk.getStatus().equals(BlockStatus.COMPLETED)) {
 				
+				
 				List<String> dataNodes = new ArrayList<>(
 						NamespaceTreeNode.blockDataMap.get(blkId));
 				//System.out.println("List DataNode: " + dataNodes);
