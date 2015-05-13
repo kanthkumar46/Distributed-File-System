@@ -15,6 +15,7 @@ public class Constants {
 	public static final int ACK_PORT_NUM = 5275;
 	public static final int DEFAULT_REPLICATION_FACTOR = 3;
 	
+	public static  final int HEART_BEAT_PORT = 9999;
 	public static final long MKDIR_LENGTH = 0;
 	
 	public static final String MASTER_USER = "admin";

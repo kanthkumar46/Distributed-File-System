@@ -19,6 +19,8 @@ import com.dfs.blocks.Block;
 import com.dfs.blocks.BlockReportReceiver;
 import com.dfs.blocks.BlockStatus;
 import com.dfs.failure.FSImage;
+import com.dfs.failure.HeartBeatReceiver;
+import com.dfs.failure.HeartBeatVerifier;
 import com.dfs.messages.AckMessage;
 import com.dfs.messages.GetNameNodeReplyMessage;
 import com.dfs.messages.ListNameNodeReplyMessage;
@@ -217,7 +219,10 @@ class DataNodeAckHandler implements Runnable{
 	public void run() {
 		String blkId = ackMessage.getBlockId();
 		Block blk = NameNode.tree.getBlock(blkId);
-		blk.setStatus(BlockStatus.COMPLETED);
+		int count =blk.getReplicateAckCount();
+		blk.setReplicateAckCount(++count);
+		if(count==3)
+			blk.setStatus(BlockStatus.COMPLETED);
 		System.out.println(NameNode.tree.getBlock(blkId).getStatus());
 	}
 	
@@ -228,7 +233,7 @@ public class NameNode {
 	private static List<String> nodeList;
 	private static final String SLAVES_PATH = "slaves";
 	private static final String RACK_AWARNSS_PATH = "rack_awareness.data";
-	protected static NameSpaceTree tree;
+	public static NameSpaceTree tree;
 	private static ArrayList<String> nodeToRackMapping;
 	
 	
@@ -255,10 +260,12 @@ public class NameNode {
 	}
 	
 	public static List<String> getDiffNodeList(List<String> ipAddress){
+		System.out.println(ipAddress + " At get diff Node List");
 		List<String> node = new ArrayList<>(nodeList);
 		node.removeAll(ipAddress);
+		System.out.println(node + " after removing");
 		Collections.shuffle(node);
-		return nodeList;
+		return node;
 	}
 
 	public NameNode() throws IOException {
@@ -266,11 +273,11 @@ public class NameNode {
 		nodeToRackMapping = new ArrayList<>();
 		readDataNodeList();
 		readRackAwarness();
-		//getNodeList(3);
+		
 	}
 
 	private void readRackAwarness() throws FileNotFoundException, IOException {
-		// read rack awareness  file
+		
 		File file = new File(RACK_AWARNSS_PATH);
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String node = null;
@@ -292,11 +299,13 @@ public class NameNode {
 
 	public static void main(String[] args) throws IOException {
 		NameNode node = new NameNode();
-		ExecutorService service = Executors.newFixedThreadPool(5);
+		ExecutorService service = Executors.newFixedThreadPool(7);
 		service.execute(new NameNodeClientRequest());
 		service.execute(new DataNodeAckReceiver());
 		service.execute(new BlockReportReceiver());
 		service.execute(new FSImageHandler());
+		service.execute(new HeartBeatReceiver());
+		service.execute(new HeartBeatVerifier());
 	}
 
 }

@@ -13,7 +13,7 @@ public class GetNameNodeReplyMessage extends NameNodeReplyMessage {
 	private String sourcePath;
 	
 	public GetNameNodeReplyMessage(List<BlocksMap> blkMap) {
-		super(0, RequestType.PUT);
+		super(blkMap == null ? -1:0, RequestType.PUT);
 		this.setBlockMap(blkMap);
 		// TODO Auto-generated constructor stub
 	}

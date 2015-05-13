@@ -11,6 +11,7 @@ public class Block implements Comparable<Block>,Serializable{
 	private String blockId;
 	private BlockStatus status;
 	private Long offset;
+	private int replicateAckCount;
 	
 	
 	/**
@@ -27,10 +28,11 @@ public class Block implements Comparable<Block>,Serializable{
 		this.offset = offset;
 	}
 
-	public Block(String blockId, BlockStatus status,long offset){
+	public Block(String blockId, BlockStatus status,long offset,int replicationCnt){
 		this.blockId = blockId;
 		this.status = status;
 		this.offset = offset;
+		this.setReplicateAckCount(replicationCnt);
 	}
 
 	public String getBlockId() {
@@ -53,6 +55,14 @@ public class Block implements Comparable<Block>,Serializable{
 	public int compareTo(Block o) {
 		
 		return this.offset.compareTo(o.offset);
+	}
+
+	public int getReplicateAckCount() {
+		return replicateAckCount;
+	}
+
+	public void setReplicateAckCount(int replicateAckCount) {
+		this.replicateAckCount = replicateAckCount;
 	}
 	
 	

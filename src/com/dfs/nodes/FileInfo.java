@@ -18,20 +18,20 @@ public class FileInfo implements Serializable{
 		this.blocks = new ArrayList<>();
 		this.blkMap= new ArrayList<>();
 	}
-	public FileInfo(Block blk, int replication,List<String> dataNodeList){
+	/*public FileInfo(Block blk, int replication,List<String> dataNodeList){
 		blocks = new ArrayList<>();
 		this.setReplication(replication);
 		blocks.add(blk);
 		//blkMap=new ArrayList<>();
 		blkMap.add(new BlocksMap(blk,dataNodeList));
-	}
+	}*/
 	
 	public List<Block> getBlocks() {
 		return blocks;
 	}
 
 	public void addBlock(Block e,List<String> dataNodeList){
-		this.blocks.add(e);
+		blocks.add(e);
 		blkMap.add(new BlocksMap(e,dataNodeList));
 	}
 

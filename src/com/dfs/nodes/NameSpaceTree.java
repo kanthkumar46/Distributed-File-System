@@ -1,5 +1,9 @@
 package com.dfs.nodes;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,15 +15,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dfs.blocks.Block;
-import com.dfs.blocks.BlockReport;
-import com.dfs.blocks.BlockReportReceiver;
+import com.dfs.blocks.BlockStatus;
 import com.dfs.failure.FSImage;
 import com.dfs.messages.MetaData;
+import com.dfs.messages.ReplicateMessage;
 import com.dfs.utils.Constants;
 
 public class NameSpaceTree {
 
-	
 	public static NamespaceTreeNode root;
 
 	public NameSpaceTree() {
@@ -29,7 +32,8 @@ public class NameSpaceTree {
 		if (node != null)
 			root = node;
 		else {
-			root = new NamespaceTreeNode(FileType.DIR, "",Constants.MASTER_USER,Constants.MKDIR_LENGTH);
+			root = new NamespaceTreeNode(FileType.DIR, "",
+					Constants.MASTER_USER, Constants.MKDIR_LENGTH, "/");
 		}
 	}
 
@@ -41,14 +45,14 @@ public class NameSpaceTree {
 	 * @param type
 	 * @return
 	 */
-	public int addNode(String path, int replication, FileType type,String ipAddr) {
+	public int addNode(String path, int replication, FileType type,
+			String ipAddr) {
 
-		
-		if(path.equals("/"))
+		if (path.equals("/"))
 			return -2;
 		String[] dirList = path.split("/");
 		synchronized (root) {
-			return traverseDir(root, dirList, 0, type,ipAddr);
+			return traverseDir(root, dirList, 0, type, ipAddr);
 		}
 	}
 
@@ -64,34 +68,40 @@ public class NameSpaceTree {
 	 * @return whether the path is found or not.
 	 */
 	private int traverseDir(NamespaceTreeNode start, String[] dirList,
-			int level, FileType type,String ipAddr) {
-		
+			int level, FileType type, String ipAddr) {
+
 		if (level == dirList.length - 2) {
-			
+
 			boolean flag = false;
 			for (NamespaceTreeNode node : start.getChildren()) {
 				if (node.getInfo().equals(dirList[level + 1])) {
 					flag = true;
-					System.out.println("Already Exists" + Arrays.toString(dirList));
+					System.out.println("Already Exists"
+							+ Arrays.toString(dirList));
 					return -2;
 				}
 			}
 			if (!flag) {
+				String str = "";
+				for (String s : dirList) {
+					str += s + "/";
+				}
 				start.getChildren().add(
-						new NamespaceTreeNode(type, dirList[level + 1],ipAddr,0));
+						new NamespaceTreeNode(type, dirList[level + 1], ipAddr,
+								0, str.substring(0, str.length() - 1)));
 				System.out.println("Dir added" + Arrays.toString(dirList));
 				return 0;
 			}
-			
+
 		}
 		for (NamespaceTreeNode node : start.getChildren()) {
 			if (node.getInfo().equals(dirList[level + 1])) {
-				return traverseDir(node, dirList, ++level, type,ipAddr);
+				return traverseDir(node, dirList, ++level, type, ipAddr);
 			}
 		}
-			System.out.println("Cannot create dir" + Arrays.toString(dirList));
-			return -1;
-		}
+		System.out.println("Cannot create dir" + Arrays.toString(dirList));
+		return -1;
+	}
 
 	/****
 	 * Traverse the n-ary file structure using DFS.
@@ -111,7 +121,8 @@ public class NameSpaceTree {
 	 * @return Block Id.
 	 */
 	private String traverseFile(NamespaceTreeNode start, String[] dirList,
-			int level, FileType type, List<String> dataNodeList, long offset,String ipAddr,long fileLength) {
+			int level, FileType type, List<String> dataNodeList, long offset,
+			String ipAddr, long fileLength) {
 
 		String blkId = null;
 		if (level == dirList.length - 2) {
@@ -126,8 +137,13 @@ public class NameSpaceTree {
 			}
 			if (!fileCheck) {
 				System.out.println("File added");
+				String str = "";
+				for (String s : dirList) {
+					str += s + "/";
+				}
 				NamespaceTreeNode node = new NamespaceTreeNode(type,
-						dirList[level + 1], dataNodeList,ipAddr,fileLength);
+						dirList[level + 1], dataNodeList, ipAddr, fileLength,
+						str.substring(0, str.length() - 1));
 				start.getChildren().add(node);
 				blkId = node.addBlock(dataNodeList, offset);
 			}
@@ -137,7 +153,7 @@ public class NameSpaceTree {
 		for (NamespaceTreeNode node : start.getChildren()) {
 			if (node.getInfo().equals(dirList[level + 1])) {
 				return traverseFile(node, dirList, ++level, type, dataNodeList,
-						offset,ipAddr,fileLength);
+						offset, ipAddr, fileLength);
 			}
 		}
 		return blkId;
@@ -160,8 +176,8 @@ public class NameSpaceTree {
 
 		if (nodes.length == 0) {
 			for (NamespaceTreeNode temp : root.getChildren()) {
-				list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),
-						temp.getFileType(),temp.getSize()));
+				list.add(new MetaData(temp.getInfo(), temp.getCreatedTime(),
+						temp.getUser(), temp.getFileType(), temp.getSize()));
 			}
 			System.out.println("Listing files");
 			return list;
@@ -173,8 +189,9 @@ public class NameSpaceTree {
 			if (node.getInfo().equals(nodes[nodes.length - 1])) {
 				stop = true;
 				for (NamespaceTreeNode temp : node.getChildren()) {
-					list.add(new MetaData(temp.getInfo(),temp.getCreatedTime(),temp.getUser(),
-							temp.getFileType(),temp.getSize()));
+					list.add(new MetaData(temp.getInfo(),
+							temp.getCreatedTime(), temp.getUser(), temp
+									.getFileType(), temp.getSize()));
 				}
 				System.out.println("Listing files ");
 				return list;
@@ -200,11 +217,11 @@ public class NameSpaceTree {
 	 * @return block Id
 	 */
 	public String put(String destinationPath, List<String> dataNodeList,
-			long offset,String ipAddr,long fileLen) {
+			long offset, String ipAddr, long fileLen) {
 		synchronized (root) {
 			String dirList[] = destinationPath.split("/");
 			return traverseFile(root, dirList, 0, FileType.FILE, dataNodeList,
-					offset,ipAddr,fileLen);
+					offset, ipAddr, fileLen);
 		}
 
 	}
@@ -247,37 +264,49 @@ public class NameSpaceTree {
 			}
 		}
 		return null;
-
 	}
 
-	private static StringBuilder dfsTraverse(String nodeVal,
-			NamespaceTreeNode start, String blkId, StringBuilder builder) {
+	private static String path = "";
+
+	private static boolean dfsTraverse(String nodeVal, NamespaceTreeNode start,
+			String blkId, int level) {
 
 		if (start.getFileType() == FileType.FILE) {
-
 			for (Block blk : start.getFileInfo().getBlocks()) {
+				System.out.println("Inside for: " + blk.getBlockId());
+
 				if (blk.getBlockId().equals(blkId)) {
-					//builder.append(blkId);
-					return builder;
+					System.out.println("Receive blkId: " + blkId);
+					System.out.println("My blkId: " + blk.getBlockId());
+					System.out.println("My blkId: " + start.getPath());
+					path = start.getPath();
+					System.out.println("Replicate inside Path "
+							+ start.getInfo() + "/");
+					return true;
 				}
 			}
-
 		}
 
-		for (NamespaceTreeNode node : start.getChildren()) {
-			builder.append(node.getInfo());
-			builder.append("/");
-			return dfsTraverse(node.getInfo(), node, blkId, builder);
+		if (start.getChildren() != null) {
+
+			for (NamespaceTreeNode node : start.getChildren()) {
+				System.out.println("Replicate recursive " + node.getPath()
+						+ "/ " + start.getPath());
+				if (dfsTraverse(node.getInfo(), node, blkId, level + 1)) {
+					return true;
+				}
+			}
 		}
-		return builder;
+
+		return false;
 
 	}
-	
-	
-	public static String getReplicatePath(String blkId){
-		StringBuilder builder = dfsTraverse("",root,blkId,new StringBuilder().append("/"));
-		String str = builder.toString();
-		return str.substring(0,str.length()-1);
+
+	public static String getReplicatePath(String blkId) {
+		boolean builder = dfsTraverse("", root, blkId, 0);
+
+		System.out.println("Replicate Path " + path);
+		return path;
 	}
 
 	// public
@@ -300,39 +329,46 @@ public class NameSpaceTree {
 	}
 
 	public static void main(String[] args) {
-		
+
 		NameSpaceTree tree = new NameSpaceTree();
-		System.out.println(tree.addNode("/user", 3, FileType.DIR,"1"));
-		System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR,"2"));
+		System.out.println(tree.addNode("/user", 3, FileType.DIR, "1"));
+		System.out.println(tree.addNode("/user/kanth", 3, FileType.DIR, "2"));
 
 		List<String> dataNodeList = new ArrayList<>();
 		dataNodeList.add("1a");
 		dataNodeList.add("2a");
 		dataNodeList.add("3a");
-		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20,"1",20));
-		System.out.println(tree.put("/user/kanth/file2.txt", dataNodeList, 20,"2",20));
-		
-		
-		/*System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 20,"1",20));
-		System.out.println(tree.put("/user/kanth/file1.txt", dataNodeList, 10,"1",30));
-		System.out.println(tree.put("/user/file2.txt", dataNodeList, 30,"2",30));*/
-		//System.out.println(tree.put("/uss/file.1", dataNodeList, 10,"4",2));
-		//System.out.println(tree.listFiles("/user"));
-		List<String> blks = new ArrayList<>();
-		List<BlocksMap> blkMap = tree.getBlockMap("/user/kanth/file1.txt");
-		for (BlocksMap b : blkMap) {
-			System.out.println("Block offset: " + b.getBlk().getOffset());
-			System.out.println("Block List: " + b.getDatanodeInfo());
-			// update(b.getBlk().getBlockId(), "1", "4");
-			System.out.println(getReplicatePath(b.getBlk().getBlockId()));
-			blks.add(b.getBlk().getBlockId());
-		}
-		
-		//BlockReport report  = new BlockReport(blks,dataNodeList.get(0));
-		//BlockReportReceiver receiver = new BlockReportReceiver(report);
 
-		ExecutorService service = Executors.newFixedThreadPool(2);
-		service.execute(new FSImage());
+		System.out.println(tree.put("/user/file2.txt", dataNodeList, 20, "1",
+				20));
+
+		System.out.println(tree.put("/user/kanth/file3.txt", dataNodeList, 20,
+				"1", 20));
+
+		System.out.println(tree.put("/user/file1.txt", dataNodeList, 20, "1",
+				20));
+		System.out.println(tree.put("/user/file1.txt", dataNodeList, 20, "1",
+				20));
+		System.out.println(tree.put("/user/file1.txt", dataNodeList, 20, "1",
+				20));
+		System.out.println(tree.put("/user/file1.txt", dataNodeList, 20, "1",
+				20));
+
+		System.out.println(tree.put("/user/file1.txt", dataNodeList, 20, "1",
+				20));
+
+		// System.out.println(tree.put("/user/kanth/file2.txt", dataNodeList,
+		// 20,"2",20));
+
+		List<String> blks = new ArrayList<>();
+		List<BlocksMap> blkMap = tree.getBlockMap("/user/kanth/file3.txt");
+		for (BlocksMap b : blkMap) {
+			System.out.println(b.getBlk().getBlockId());
+			System.out.println(getReplicatePath(b.getBlk().getBlockId()));
+		}
+
+		// ExecutorService service = Executors.newFixedThreadPool(2);
+		// service.execute(new FSImage());
 
 	}
 
@@ -358,15 +394,19 @@ public class NameSpaceTree {
 					if (deleted)
 						blkMap.getDatanodeInfo().add(newIp);
 
-					System.out.println("BLockMap dfs NodeList: "
-							+ blkMap.getDatanodeInfo());
+					/*
+					 * System.out.println("BLockMap dfs NodeList: " +
+					 * blkMap.getDatanodeInfo());
+					 */
 					return true;
 				}
 			}
 		}
 
-		for (NamespaceTreeNode node : start.getChildren()) {
-			return dfsTraverse(node, ipAddress, blkId, newIp);
+		if (start.getChildren() != null) {
+			for (NamespaceTreeNode node : start.getChildren()) {
+				return dfsTraverse(node, ipAddress, blkId, newIp);
+			}
 		}
 		return false;
 
@@ -403,10 +443,56 @@ public class NameSpaceTree {
 				if (newIpBlks == null)
 					newIpBlks = new ArrayList<>();
 				newIpBlks.add(blkId);
-				System.out.println("dataNodeBlockMap NodeList: " + newIpBlks);
+				// System.out.println("dataNodeBlockMap NodeList: " +
+				// newIpBlks);
 				NamespaceTreeNode.dataNodeBlockMap.put(newIpAddress, newIpBlks);
 			}
 		}
+	}
+
+	public static void initialTransferBlocks(String ipAddress) {
+		List<String> blks = root.dataNodeBlockMap.get(ipAddress);
+		for (String blk : blks) {
+			Block block = NameNode.tree.getBlock(blk);
+
+			if (block.getStatus().equals(BlockStatus.COMPLETED)) {
+				List<String> dataNodes = new ArrayList<>(
+						NamespaceTreeNode.blockDataMap.get(blk));
+				List<String> newIpAddress = NameNode.getDiffNodeList(dataNodes);
+				dataNodes.remove(ipAddress);
+				for (String dataNode : dataNodes) {
+					try {
+						String ipAddr = newIpAddress.get(0);
+						sendReply(dataNode, Constants.DATANODE_NAMENODE_PORT,
+								blk, ipAddr);
+						NameSpaceTree.update(blk, ipAddress,
+								ipAddr);
+						block.setStatus(BlockStatus.PROGRESS);
+						block.setReplicateAckCount(block.getReplicateAckCount()-1);
+						break;
+
+					} catch (IOException err) {
+						continue;
+					}
+				}
+			}
+		}
+	}
+
+	private static void sendReply(String dataNode, int datanodeNamenodePort,
+			String blk, String ipAddr) throws UnknownHostException, IOException {
+		Socket socket = new Socket(dataNode, datanodeNamenodePort);
+		ObjectOutputStream oos = new ObjectOutputStream(
+				socket.getOutputStream());
+		String path = NameSpaceTree.getReplicatePath(blk);
+		
+		ReplicateMessage replicateMsg = new ReplicateMessage(
+				RequestType.REPLICA, ipAddr,
+				Constants.DATANODE_CLIENT_PORT, blk, path);
+		oos.writeObject(replicateMsg);
+		oos.close();
+		socket.close();
+		
 	}
 
 	private static void updateBlockDataMap(String blkId, String ipAddress,
@@ -422,8 +508,8 @@ public class NameSpaceTree {
 					itr.remove();
 					blockToDataNode.add(newIpAddress);
 					NamespaceTreeNode.blockDataMap.put(blkId, blockToDataNode);
-					System.out.println(NamespaceTreeNode.blockDataMap
-							.get(blkId));
+					// System.out.println(NamespaceTreeNode.blockDataMap
+					// .get(blkId));
 					break;
 				}
 			}

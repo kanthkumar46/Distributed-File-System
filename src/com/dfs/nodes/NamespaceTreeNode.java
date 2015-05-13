@@ -22,6 +22,7 @@ public class NamespaceTreeNode implements Serializable{
 	private String createdTime;
 	private String user;
 	private long size;
+	private String path;
 	
 	// blockId to Block Mapping
 	static Map<String,Block> blockMap = new HashMap<>();
@@ -36,7 +37,7 @@ public class NamespaceTreeNode implements Serializable{
 		
 	}
 	
-	public NamespaceTreeNode(FileType type, String info,String ipAddr,long size){
+	public NamespaceTreeNode(FileType type, String info,String ipAddr,long size,String path){
 		if (type == FileType.DIR) {
 			this.children = new ArrayList<>();
 			this.info = info;
@@ -45,11 +46,12 @@ public class NamespaceTreeNode implements Serializable{
 			this.setCreatedTime(new Date().toString());
 			this.setUser(ipAddr);
 			this.setSize(size);
+			this.setPath(path);
 		} 
 	}
 	
 	public NamespaceTreeNode(FileType type, String info,
-			List<String> dataNodeList,String ipAddr,long size) {
+			List<String> dataNodeList,String ipAddr,long size,String path) {
 		if(type == FileType.FILE) {
 			this.children = null;
 			this.info = info;
@@ -58,6 +60,7 @@ public class NamespaceTreeNode implements Serializable{
 			this.setCreatedTime(new Date().toString());
 			this.setUser(ipAddr);
 			this.setSize(size);
+			this.setPath(path);
 		}
 
 	}
@@ -74,36 +77,26 @@ public class NamespaceTreeNode implements Serializable{
 	public String addBlock(List<String> dataNodeList,long offset) {
 		String blockId = UUID.randomUUID().toString();
 		Block blk = new Block(blockId,
-				BlockStatus.PROGRESS,offset);
+				BlockStatus.PROGRESS,offset,0);
 		fileInfo.addBlock(blk, dataNodeList);
 		blockMap.put(blockId, blk);
-		
-		System.out.println("Before ");
-		for(Map.Entry<String, List<String>> m : dataNodeBlockMap.entrySet()){
-			System.out.println("Get KeY" + m.getKey() + " GetValue " + m.getValue());
-		}
-		
+
 		for(String dataNode: dataNodeList){
 			if(dataNodeBlockMap.containsKey(dataNode)){
 				
 				List<String> blks = dataNodeBlockMap.get(dataNode);
-				System.out.println("DataNode Contains " + dataNode +" "+ blks);
+				
 				blks.add(blockId);
 				dataNodeBlockMap.put(dataNode, blks);
-				//System.out.println("DataNode Contains " + dataNode +" "+ blks);
+				
 			}else{
 				ArrayList<String> blks = new ArrayList<>();
 				blks.add(blockId);
-				//System.out.println("DataNode" + dataNode +" "+ blks);
+				
 				dataNodeBlockMap.put(dataNode, blks);
 			}
 		}
 		
-		System.out.println("After ");
-		
-		for(Map.Entry<String, List<String>> m : dataNodeBlockMap.entrySet()){
-			System.out.println("Get KeY" + m.getKey() + " GetValue " + m.getValue());
-		}
 		blockDataMap.put(blockId, dataNodeList);
 		return blockId;
 	}
@@ -163,6 +156,14 @@ public class NamespaceTreeNode implements Serializable{
 
 	public void setSize(long size) {
 		this.size = size;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 }
