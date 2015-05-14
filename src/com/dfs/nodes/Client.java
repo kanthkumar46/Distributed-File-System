@@ -250,7 +250,7 @@ class clientWorker {
 					begin.await();
 					sendRequestToDataNode(map,sock);
 					end.await();
-					System.err.println("==========");
+					System.err.print("==========");
 					break;
 				} catch (IOException | InterruptedException err) {
 					continue;

@@ -24,7 +24,8 @@ private static final String MASTER_PATH = "master";
 		try{
 			socket = new Socket(nameNode, portNo);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.err.println("Unable to reach NameNode!");
 		}
 		
 		return socket;
@@ -32,9 +33,11 @@ private static final String MASTER_PATH = "master";
 	
 	public void closeConnection(Socket socket){
 		try {
-			socket.close();
+			if(socket != null)
+				socket.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			System.err.println("Unable to reach NameNode!");
 		}
 	}
 
